@@ -37,11 +37,6 @@ public class Server {
 		}
 	}
 	
-	public void WriteList(FileEntry newFile)
-	{
-		
-	}
-	
 	private void ReadList()
 	{
 		try
