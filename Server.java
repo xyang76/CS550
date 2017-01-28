@@ -11,8 +11,8 @@ public class Server {
 	static String ListName = "./fl.txt";
 	FileEntry[] FE = new FileEntry[100];
 	File file = new File(ListName);
-	ServerSocket server = null;
-	Socket client = null;
+	ServerSocket ss = null;
+	Socket cs = null;
 	
 	public static void main(String[] args)throws Exception
 	{
@@ -28,14 +28,18 @@ public class Server {
 		try
 		{
 			FileNum = 0;
-			System.out.println(file.delete());
-			file.createNewFile();
-			System.out.println("New file list created.");
+			PrintWriter writer = new PrintWriter(ListName);
+			writer.close();
 		}
 		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	public void WriteList(FileEntry newFile)
+	{
+		
 	}
 	
 	private void ReadList()
@@ -104,11 +108,11 @@ public class Server {
 	{
 		try
 		{
-			server = new ServerSocket(port);
+			ss = new ServerSocket(port);
 			while (true)
 			{
-				client = server.accept();
-				ServerThread st = new ServerThread(client);
+				cs = ss.accept();
+				ServerThread st = new ServerThread(cs);
 				st.start();
 			}
 		}
@@ -149,7 +153,6 @@ public class Server {
 		public void run()
 		{
 			String str = null;
-			boolean done = false;
 			try
 			{
 				str = input.readLine();
@@ -175,6 +178,10 @@ public class Server {
 					FE[FileNum].setPort(str);
 					str = input.readLine();
 					FE[FileNum].setFileName(str);
+					FileWriter fw = new FileWriter(ListName, true);
+					PrintWriter writer = new PrintWriter(fw);
+					writer.println(FE[FileNum].toString());
+					writer.close();
 					FileNum++;
 				}
 				else
@@ -183,7 +190,7 @@ public class Server {
 				}
 				client.close();
 			}
-			catch (IOException e)
+			catch (Exception e)
 			{
 				System.out.println(e.getMessage());
 			}
