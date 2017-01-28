@@ -12,6 +12,11 @@ public class FileEntry {
 		FileName = s[2];
 	}
 	
+	public FileEntry()
+	{
+		
+	}
+	
 	public String toString()
 	{
 		return (IP+" "+Port+" "+FileName);

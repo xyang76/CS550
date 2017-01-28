@@ -4,15 +4,15 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 
-import static java.lang.System.out;
-
 
 public class Server {
 
 	Integer port, FileNum = 0;
-	static String ListName = "fl.txt";
+	static String ListName = "./fl.txt";
 	FileEntry[] FE = new FileEntry[100];
 	File file = new File(ListName);
+	ServerSocket server = null;
+	Socket client = null;
 	
 	public static void main(String[] args)throws Exception
 	{
@@ -20,7 +20,7 @@ public class Server {
 		Server server = new Server();
 		server.ReadPort();
 		server.ReadList();
-		
+		server.StartListenning();
 	}
 	
 	private void CreateList()
@@ -28,8 +28,8 @@ public class Server {
 		try
 		{
 			FileNum = 0;
-			file.delete();
-			System.out.println(file.createNewFile()+ " when creating");
+			System.out.println(file.delete());
+			file.createNewFile();
 			System.out.println("New file list created.");
 		}
 		catch (Exception e)
@@ -48,9 +48,10 @@ public class Server {
 			while ((line = reader.readLine()) != null)
 			{
 				FE[FileNum] = new FileEntry(line);
+				//FE[FileNum] = new FileEntry();
 				FileNum++;
 			}
-			out.println("File list read.\n" + FileNum + " file(s) in list.");
+			System.out.println("File list read.\n" + FileNum + " file(s) in list.");
 			ShowFileList();
 		}
 		catch (Exception e)
@@ -71,14 +72,14 @@ public class Server {
 			{
 				try
 				{
-					out.println("Please specify server port:");
+					System.out.println("Please specify server port:");
 					port = Integer.valueOf(br.readLine());
 					flag = false;
-					out.println("Port set at "+port+'.');
+					System.out.println("Port set at "+port+'.');
 				}
 				catch (NumberFormatException e)
 				{
-					out.println("Not a valid integer!");
+					System.out.println("Not a valid integer!");
 				}
 			} 
 			while (flag);
@@ -91,7 +92,7 @@ public class Server {
 		}
 	}
 
-	public void ShowFileList()
+	private void ShowFileList()
 	{
 		for (int i = 0; i < FileNum; i++)
 		{
@@ -101,6 +102,91 @@ public class Server {
 	
 	private void StartListenning()
 	{
+		try
+		{
+			server = new ServerSocket(port);
+			while (true)
+			{
+				client = server.accept();
+				ServerThread st = new ServerThread(client);
+				st.start();
+			}
+		}
+		catch (IOException e)
+		{
+			System.out.println(e.getMessage());
+		}
 		
+	}
+	
+	class ServerThread extends Thread
+	{
+		Socket client;
+		BufferedReader input;
+		PrintWriter output;
+//		Integer FileNum;
+//		FileEntry[] FE = null;
+		
+		public ServerThread(Socket c)
+		{
+			this.client = c;
+			InputStreamReader reader;
+			OutputStreamWriter writer;
+			try
+			{
+				reader = new InputStreamReader(client.getInputStream());
+				writer = new OutputStreamWriter(client.getOutputStream());
+				input = new BufferedReader(reader);
+				output = new PrintWriter(writer, true);
+			}
+			catch (IOException e)
+			{
+				System.out.println(e.getMessage());
+			}
+		}
+		
+		@Override
+		public void run()
+		{
+			String str = null;
+			boolean done = false;
+			try
+			{
+				str = input.readLine();
+			
+				if (str.equals("LOOKUP"))
+				{
+					str = input.readLine();
+					for (int i = 0; i<FileNum; i++)
+					{
+						if (FE[i].getFileName().equals(str))
+						{
+							output.println(FE[i].getIP());
+							output.println(FE[i].getPort());
+						}
+					}
+				}
+				else if (str.equals("REGISTER"))
+				{
+					FE[FileNum] = new FileEntry();
+					str = input.readLine();
+					FE[FileNum].setIP(str);
+					str = input.readLine();
+					FE[FileNum].setPort(str);
+					str = input.readLine();
+					FE[FileNum].setFileName(str);
+					FileNum++;
+				}
+				else
+				{
+					System.out.println("Invalid request.");
+				}
+				client.close();
+			}
+			catch (IOException e)
+			{
+				System.out.println(e.getMessage());
+			}
+		}
 	}
 }
