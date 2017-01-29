@@ -1,4 +1,4 @@
-package cs550.iit;
+package CS550.iit;
 
 import java.io.*;
 import java.net.*;
@@ -24,6 +24,7 @@ public class Peer {
 	private int localPort;
 	private Scanner sc;
 	private ServerSocket ss;
+	private ArrayList<FileListener> fList;
 	public boolean runable;				//Determine whether the file share system should be run. 
 	
 	//Command string.
@@ -63,20 +64,38 @@ public class Peer {
 	public void register(String filepath){
 		Socket socket;
 		File file = new File(filepath);
+		FileListener fl;
 		
 		if(!file.exists()){
 			System.err.println("Error: File do not exist! Please input a correct file with file path!");
 			return;
 		}
+		if(file.isDirectory()){
+			fl = new FileListener(this, filepath, null);
+		} else {
+			fl = new FileListener(this, file.getParent(), file.getName());
+		}
+		fList.add(fl);
 		
 		try {
 			socket = new Socket(this.server, this.serverPort);
 			PrintWriter write = new PrintWriter(socket.getOutputStream());
+			FileEntry fe = new FileEntry();
+			
+			fe.setIP(socket.getLocalAddress().getHostAddress());
+			fe.setPort(String.valueOf(this.localPort));
 			
 			write.println("REGISTER");
-			write.println(socket.getLocalAddress().getHostAddress());
-			write.println(this.localPort);
-			write.println(filepath);
+			if(file.isDirectory()){
+				File[] filelist = file.listFiles();
+				for(File f : filelist){
+					fe.setFileName(f.toString());
+					write.println(fe.toString());
+				}			
+			} else {
+				fe.setFileName(filepath);
+				write.println(fe.toString());
+			}
 			write.flush();
 			
 			System.out.println("Register success!");
@@ -89,8 +108,27 @@ public class Peer {
 		}
 	}
 	
-	public void delete(String file) {
+	public void delete(String filepath) {
+		Socket socket;
 		
+		try {
+			socket = new Socket(this.server, this.serverPort);
+			PrintWriter write = new PrintWriter(socket.getOutputStream());
+			
+			write.println("DELETE");
+			write.println(socket.getLocalAddress().getHostAddress());
+			write.println(this.localPort);
+			write.println(filepath);
+			write.flush();
+			
+			System.out.println("Update success!");
+			write.close();
+			socket.close();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public ArrayList<FileEntry> lookup(String filename){
@@ -163,6 +201,7 @@ public class Peer {
 	
 	private void initSetting(){
 		this.sc = new Scanner(System.in);
+		this.fList = new ArrayList<FileListener>();
 		this.runable = true;
 		
 		System.out.println("Peer starting...");
@@ -319,6 +358,4 @@ public class Peer {
 			}
 		}
 	}
-
-	
 }

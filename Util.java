@@ -1,4 +1,4 @@
-package cs550.iit;
+package CS550.iit;
 
 public class Util {
 	public static int getInt(String s) {
