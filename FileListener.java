@@ -1,4 +1,4 @@
-package CS550.iit;
+package cs550.iit;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -53,10 +53,10 @@ public class FileListener {
 						String changed = event.context().toString();
 						String eventString = event.kind().toString();
 						if(eventString.equals("ENTRY_CREATE")){
-							peer.register(folderpath.resolve(changed).toString());
+							peer.register(changed);
 						} else if(eventString.equals("ENTRY_DELETE")){
 							if(file == null || changed.equals(file)){
-								peer.delete(folderpath.resolve(changed).toString());
+								peer.delete(changed);
 							}
 						}
 		            }

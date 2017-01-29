@@ -1,8 +1,8 @@
-package CS550.iit;
+package cs550.iit;
 
 public class FileEntry {
 
-	String IP, Port, FileName, Directory;
+	String IP, Port, FileName;
 	
 	public FileEntry(String msg) throws Exception
 	{
@@ -50,18 +50,5 @@ public class FileEntry {
 	public void setPort(String port)
 	{
 		Port = port;
-	}
-	
-	@Override
-	public boolean equals(Object target)
-	{
-		if (
-				(FileName.equals(((FileEntry)target).getFileName()))
-				&& (IP.equals(((FileEntry)target).getIP()))
-				&& (Port.equals(((FileEntry)target).getPort()))
-			)
-			return true;
-		else
-			return false;
 	}
 }
