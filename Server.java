@@ -3,13 +3,14 @@ package cs550.iit;
 import java.io.*;
 import java.net.*;
 import java.nio.file.*;
+import java.util.ArrayList;
 
 
 public class Server {
 
-	Integer port, FileNum = 0;
-	static String ListName = "./fl.txt";
-	FileEntry[] FE = new FileEntry[100];
+	Integer port;
+	static String ListName = "fl.txt";
+	ArrayList<FileEntry> FE = new  ArrayList<FileEntry>();
 	File file = new File(ListName);
 	ServerSocket ss = null;
 	Socket cs = null;
@@ -27,7 +28,6 @@ public class Server {
 	{
 		try
 		{
-			FileNum = 0;
 			PrintWriter writer = new PrintWriter(ListName);
 			writer.close();
 		}
@@ -46,11 +46,9 @@ public class Server {
 			String line = null;
 			while ((line = reader.readLine()) != null)
 			{
-				FE[FileNum] = new FileEntry(line);
-				//FE[FileNum] = new FileEntry();
-				FileNum++;
+				FE.add(new FileEntry(line));
 			}
-			System.out.println("File list read.\n" + FileNum + " file(s) in list.");
+			System.out.println("File list read.\n" + FE.size() + " file(s) in list.");
 			ShowFileList();
 		}
 		catch (Exception e)
@@ -93,9 +91,9 @@ public class Server {
 
 	private void ShowFileList()
 	{
-		for (int i = 0; i < FileNum; i++)
+		for (int i = 0; i < FE.size(); i++)
 		{
-			System.out.println(FE[i].toString());
+			System.out.println(FE.get(i).toString());
 		}
 	}
 	
@@ -155,29 +153,35 @@ public class Server {
 				if (str.equals("LOOKUP"))
 				{
 					str = input.readLine();
-					for (int i = 0; i<FileNum; i++)
+					for (int i = 0; i<FE.size(); i++)
 					{
-						if (FE[i].getFileName().equals(str))
+						FileEntry f = FE.get(i);
+						File file = new File(f.getFileName());
+						if (file.getName().equals(str))
 						{
-							output.println(FE[i].getIP());
-							output.println(FE[i].getPort());
+							output.println(f.toString());
 						}
 					}
+					output.flush();
 				}
 				else if (str.equals("REGISTER"))
 				{
-					FE[FileNum] = new FileEntry();
+					FileEntry f = new FileEntry();
 					str = input.readLine();
-					FE[FileNum].setIP(str);
+					f.setIP(str);
 					str = input.readLine();
-					FE[FileNum].setPort(str);
+					f.setPort(str);
 					str = input.readLine();
-					FE[FileNum].setFileName(str);
+					f.setFileName(str);
+					FE.add(f);
 					FileWriter fw = new FileWriter(ListName, true);
 					PrintWriter writer = new PrintWriter(fw);
-					writer.println(FE[FileNum].toString());
+					writer.println(f.toString());
 					writer.close();
-					FileNum++;
+				} 
+				else if (str.equals("DELETE"))
+				{
+					
 				}
 				else
 				{

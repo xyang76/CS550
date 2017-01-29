@@ -3,6 +3,7 @@ package cs550.iit;
 import java.io.*;
 import java.net.*;
 import java.text.Format;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -40,8 +41,10 @@ public class Peer {
 		Peer p = new Peer();
 		try {
 			p.start();
+		} catch (BindException e) {
+			System.err.println("Port address already in use. please restart the system and select another port.");
+			p.closeFileShare();
 		} catch (Exception e) {
-			System.out.println("An error occur:");
 			e.printStackTrace();
 		}
 	}
@@ -57,13 +60,26 @@ public class Peer {
 		this.startFileShare();
 	}
 	
-	public void register(String fileName){
+	public void register(String filepath){
 		Socket socket;
+		File file = new File(filepath);
+		
+		if(!file.exists()){
+			System.err.println("Error: File do not exist! Please input a correct file with file path!");
+			return;
+		}
+		
 		try {
 			socket = new Socket(this.server, this.serverPort);
 			PrintWriter write = new PrintWriter(socket.getOutputStream());
-			write.println(fileName);
+			
+			write.println("REGISTER");
+			write.println(socket.getLocalAddress().getHostAddress());
+			write.println(this.localPort);
+			write.println(filepath);
 			write.flush();
+			
+			System.out.println("Register success!");
 			write.close();
 			socket.close();
 		} catch (UnknownHostException e) {
@@ -73,33 +89,72 @@ public class Peer {
 		}
 	}
 	
-	public void lookup(String fileName){
+	public void delete(String file) {
+		
+	}
+	
+	public ArrayList<FileEntry> lookup(String filename){
 		Socket socket;
+		ArrayList<FileEntry> file = new ArrayList<FileEntry>();
 		try {
 			socket = new Socket(this.server, this.serverPort);
 			PrintWriter write = new PrintWriter(socket.getOutputStream());
-			write.println(fileName);
+			BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream(),"utf-8")); 
+			String next;
+			
+			write.println("LOOKUP");
+			write.println(filename);
 			write.flush();
+			next = input.readLine();
+			while(next != null){
+				System.out.println(next);
+				FileEntry fe = new FileEntry(next);
+				file.add(fe);
+				next = input.readLine();
+			}
+			
+			input.close();
 			write.close();
 			socket.close();
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+		return file;
 	}
 	
-	public void peerRetrive(String ip, int port, String fileName){
+	public void peerRetrieve(String ip, int port, String filename, String savepath){
 		Socket socket;
 		try {
 			socket = new Socket(ip, port);
+			byte[] buf = new byte[4096];
+			DataInputStream input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+			DataOutputStream file = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(savepath)));
 			PrintWriter write = new PrintWriter(socket.getOutputStream());
-			write.println(fileName);
+			
+			write.println(filename);
 			write.flush();
+			
+			while (true) {
+                int read = 0;
+                read = input.read(buf);
+                
+                if (read == -1) {
+                    break;
+                }
+                file.write(buf, 0, read);
+            }
+			System.out.println("Retrieve file from " + ip + " success!");
+			
+			file.close();
+			input.close();
 			write.close();
 			socket.close();
 		} catch (UnknownHostException e) {
-			e.printStackTrace();
+			System.err.println("Connect to peer has been failed. Probably peer system already closed this port.");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -161,31 +216,60 @@ public class Peer {
 		public void run(){
 			System.out.println(COMMAND_DETAIL_STRING);
 			while (true) {
-				System.out.print(COMMAND_STRING);
-				String command = sc.nextLine().trim();
-				String s = command.substring(0, 1).toUpperCase();
-				if(s.equals("R")){
-					System.out.println("Please input the file name: ");
-					String file = sc.nextLine();
-					p.register(file);
-				} else if(s.equals("L")){
-					System.out.println("Please input the file name: ");
-					String file = sc.nextLine();
-					p.lookup(file);
-				} else if(s.equals("P")){
-					System.out.println("Please input peer address:");
-					String address = sc.nextLine();
-					System.out.println("Please input peer port:");
-					int port = Util.getInt(sc.nextLine());
-					System.out.println("Please input the file name: ");
-					String file = sc.nextLine();
-					p.peerRetrive(address, port, file);
-				} else if(s.equals("E")){
-					p.runable = false;
-					p.closeFileShare();
-					break;
-				} else {
-					System.out.println("The command is incorrect.");
+				try {
+					System.out.println(COMMAND_STRING);
+					String command = sc.nextLine().trim();
+					String s = command.substring(0, 1).toUpperCase();
+					if (s.equals("R")) {
+						System.out.println("Please input the file or directory you want to register to server: ");
+						String file = sc.nextLine();
+						p.register(file);
+					} else if (s.equals("L")) {
+						System.out.println("Please input the file name: ");
+						String file = sc.nextLine();
+						ArrayList<FileEntry> list = p.lookup(file);
+						switch (list.size()) {
+						case 0:
+							System.out.println("No such file exist in the server.");
+							break;
+						default:
+							System.out.println("File results:");
+							for (int i = 0; i < list.size(); i++) {
+								FileEntry fe = list.get(i);
+								System.out.println(String.format("%d: %s in %s", i + 1, fe.getFileName(), fe.getIP()));
+							}
+							System.out.println("Choose an index to retrieve, or type 'C' to cancel:");
+							String op = sc.nextLine().trim();
+							if (!"".equals(op) && !"C".equals(op.substring(0, 1).toUpperCase())) {
+								System.out.println("Please input the save path of the file:");
+								String savepath = sc.nextLine();
+								int index = Util.getInt(op);
+								if(index > 0 && index <= list.size()){
+									FileEntry fe = list.get(index - 1);
+									p.peerRetrieve(fe.getIP(), Util.getInt(fe.getPort()), fe.getFileName(), savepath);
+								}
+							}
+							break;
+						}
+					} else if (s.equals("P")) {
+						System.out.println("Please input peer address:");
+						String address = sc.nextLine();
+						System.out.println("Please input peer port:");
+						int port = Util.getInt(sc.nextLine());
+						System.out.println("Please input the file name: ");
+						String file = sc.nextLine();
+						System.out.println("Please input the save path of the file: ");
+						String savepath = sc.nextLine();
+						p.peerRetrieve(address, port, file, savepath);
+					} else if (s.equals("E")) {
+						p.runable = false;
+						p.closeFileShare();
+						break;
+					} else {
+						System.err.println("The command is incorrect.");
+					} 
+				} catch (StringIndexOutOfBoundsException e) {
+					System.err.println("Please input anything!");
 				}
 			}
 		}
@@ -193,24 +277,48 @@ public class Peer {
 	
 	class ServiceThread extends Thread{
 		Socket socket;
-	    BufferedReader input; 
-	    PrintWriter output;
-	    String filepath;
+		BufferedReader input; 
+		DataOutputStream output;
+		String filepath;
 	    
 		public ServiceThread(Socket s) throws IOException{
 			this.socket = s;
 			input = new BufferedReader(new InputStreamReader(s.getInputStream(),"utf-8")); 
+			output = new DataOutputStream(s.getOutputStream());
 		}
 		public void run(){
 			try {
 				this.filepath = input.readLine();
 				System.out.println("\nA new request for file:[" + this.filepath + 
 						"] from:" + socket.getRemoteSocketAddress());
+				
+				File fi = new File(this.filepath);
+				DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(this.filepath)));
+				
+                byte[] buf = new byte[4096];
+
+                while (true) {
+                    int read = 0;
+                    if (dis != null) {
+                        read = dis.read(buf);
+                    }
+
+                    if (read == -1) {
+                        break;
+                    }
+                    output.write(buf, 0, read);
+                }
+                output.flush();
+                
+                dis.close();
 				this.input.close();
+				this.output.close();
 				this.socket.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 	}
+
+	
 }
