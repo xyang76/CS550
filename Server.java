@@ -1,4 +1,4 @@
-package cs550.iit;
+package CS550.iit;
 
 import java.io.*;
 import java.net.*;
@@ -15,7 +15,7 @@ public class Server {
 	ServerSocket ss = null;
 	Socket cs = null;
 	
-	public static void main(String[] args)throws Exception
+	public static void main(String[] args) 
 	{
 		// TODO Auto-generated method stub		
 		Server server = new Server();
@@ -29,6 +29,10 @@ public class Server {
 		try
 		{
 			PrintWriter writer = new PrintWriter(ListName);
+			for (FileEntry ite : FE)
+			{
+				writer.println(ite.toString());
+			}
 			writer.close();
 		}
 		catch (Exception e)
@@ -53,7 +57,7 @@ public class Server {
 		}
 		catch (Exception e)
 		{
-			System.out.println("Can't read file list.");
+			System.out.println("Can't read file list. the system will create a new file.");
 			CreateList();
 		}
 	}
@@ -152,6 +156,7 @@ public class Server {
 			
 				if (str.equals("LOOKUP"))
 				{
+					boolean bl = false;
 					str = input.readLine();
 					for (int i = 0; i<FE.size(); i++)
 					{
@@ -159,13 +164,37 @@ public class Server {
 						File file = new File(f.getFileName());
 						if (file.getName().equals(str))
 						{
+							bl = true;
 							output.println(f.toString());
 						}
 					}
 					output.flush();
+					if (bl)
+						System.out.println("File found.");
+					else
+						System.out.println("File not found.");
 				}
 				else if (str.equals("REGISTER"))
 				{
+					FileWriter fw = new FileWriter(ListName, true);
+					PrintWriter writer = new PrintWriter(fw);
+					
+					FileEntry f = null;
+					str = input.readLine();
+					
+					while(str != null){
+						f = new FileEntry(str);
+						FE.add(f);
+						writer.println(f.toString());
+						str = input.readLine();
+					}
+					
+					writer.close();
+					System.out.println("Entry registered.");
+				} 
+				else if (str.equals("DELETE"))
+				{
+					boolean bl = false;
 					FileEntry f = new FileEntry();
 					str = input.readLine();
 					f.setIP(str);
@@ -173,15 +202,12 @@ public class Server {
 					f.setPort(str);
 					str = input.readLine();
 					f.setFileName(str);
-					FE.add(f);
-					FileWriter fw = new FileWriter(ListName, true);
-					PrintWriter writer = new PrintWriter(fw);
-					writer.println(f.toString());
-					writer.close();
-				} 
-				else if (str.equals("DELETE"))
-				{
-					
+					bl = FE.remove(f);
+					CreateList();
+					if (bl)
+						System.out.println("Entry deleted.");
+					else
+						System.out.println("Entry not found.");
 				}
 				else
 				{
