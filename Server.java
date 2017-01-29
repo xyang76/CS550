@@ -52,12 +52,12 @@ public class Server {
 			{
 				FE.add(new FileEntry(line));
 			}
-			System.out.println("File list read.\n" + FE.size() + " file(s) in list.");
+			System.out.println("File list read.");
 			ShowFileList();
 		}
 		catch (Exception e)
 		{
-			System.out.println("Can't read file list. the system will create a new file.");
+			System.out.println("Can't read file list. Creating a new list.");
 			CreateList();
 		}
 	}
@@ -95,16 +95,19 @@ public class Server {
 
 	private void ShowFileList()
 	{
+		System.out.println(FE.size() + " file(s) in list.");
 		for (int i = 0; i < FE.size(); i++)
 		{
 			System.out.println(FE.get(i).toString());
 		}
+		System.out.println();
 	}
 	
 	private void StartListenning()
 	{
 		try
 		{
+			System.out.println("Start listening.");
 			ss = new ServerSocket(port);
 			while (true)
 			{
@@ -150,6 +153,7 @@ public class Server {
 		public void run()
 		{
 			String str = null;
+			System.out.println("New thread created.");
 			try
 			{
 				str = input.readLine();
@@ -158,6 +162,7 @@ public class Server {
 				{
 					boolean bl = false;
 					str = input.readLine();
+					System.out.println("Looking up \""+str+"\".");
 					for (int i = 0; i<FE.size(); i++)
 					{
 						FileEntry f = FE.get(i);
@@ -170,9 +175,9 @@ public class Server {
 					}
 					output.flush();
 					if (bl)
-						System.out.println("File found.");
+						System.out.println("File found.\n");
 					else
-						System.out.println("File not found.");
+						System.out.println("File not found.\n");
 				}
 				else if (str.equals("REGISTER"))
 				{
@@ -181,16 +186,15 @@ public class Server {
 					
 					FileEntry f = null;
 					str = input.readLine();
-					
+					System.out.println("Registering.");
 					while(str != null){
 						f = new FileEntry(str);
 						FE.add(f);
 						writer.println(f.toString());
+						System.out.println("\"" + f.getFileName() + "\" registered.");
 						str = input.readLine();
 					}
-					
 					writer.close();
-					System.out.println("Entry registered.");
 				} 
 				else if (str.equals("DELETE"))
 				{
@@ -202,6 +206,7 @@ public class Server {
 					f.setPort(str);
 					str = input.readLine();
 					f.setFileName(str);
+					System.out.println("Deleting \"" + f.getFileName() + "\".");
 					bl = FE.remove(f);
 					CreateList();
 					if (bl)
@@ -219,6 +224,7 @@ public class Server {
 			{
 				System.out.println(e.getMessage());
 			}
+			System.out.println("Thread ended.\n");
 		}
 	}
 }
