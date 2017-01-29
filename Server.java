@@ -29,6 +29,10 @@ public class Server {
 		try
 		{
 			PrintWriter writer = new PrintWriter(ListName);
+			for (FileEntry ite : FE)
+			{
+				writer.println(ite.toString());
+			}
 			writer.close();
 		}
 		catch (Exception e)
@@ -152,6 +156,7 @@ public class Server {
 			
 				if (str.equals("LOOKUP"))
 				{
+					boolean bl = false;
 					str = input.readLine();
 					for (int i = 0; i<FE.size(); i++)
 					{
@@ -159,10 +164,15 @@ public class Server {
 						File file = new File(f.getFileName());
 						if (file.getName().equals(str))
 						{
+							bl = true;
 							output.println(f.toString());
 						}
 					}
 					output.flush();
+					if (bl)
+						System.out.println("File found.");
+					else
+						System.out.println("File not found.");
 				}
 				else if (str.equals("REGISTER"))
 				{
@@ -178,10 +188,24 @@ public class Server {
 					PrintWriter writer = new PrintWriter(fw);
 					writer.println(f.toString());
 					writer.close();
+					System.out.println("Entry registered.");
 				} 
 				else if (str.equals("DELETE"))
 				{
-					
+					boolean bl = false;
+					FileEntry f = new FileEntry();
+					str = input.readLine();
+					f.setIP(str);
+					str = input.readLine();
+					f.setPort(str);
+					str = input.readLine();
+					f.setFileName(str);
+					CreateList();
+					bl = FE.remove(f);
+					if (bl)
+						System.out.println("Entry deleted.");
+					else
+						System.out.println("Entry not found.");
 				}
 				else
 				{

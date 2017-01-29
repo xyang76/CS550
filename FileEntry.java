@@ -51,4 +51,17 @@ public class FileEntry {
 	{
 		Port = port;
 	}
+	
+	@Override
+	public boolean equals(Object target)
+	{
+		if (
+				(FileName.equals(((FileEntry)target).getFileName()))
+				&& (IP.equals(((FileEntry)target).getIP()))
+				&& (Port.equals(((FileEntry)target).getPort()))
+			)
+			return true;
+		else
+			return false;
+	}
 }
