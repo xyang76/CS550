@@ -82,7 +82,7 @@ public class Peer {
 			PrintWriter write = new PrintWriter(socket.getOutputStream());
 			FileEntry fe = new FileEntry();
 			
-			fe.setIP(socket.getLocalAddress().getHostAddress());
+			fe.setIP(Util.getIP());
 			fe.setPort(String.valueOf(this.localPort));
 			
 			write.println("REGISTER");
@@ -105,6 +105,8 @@ public class Peer {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (Exception e){
+			e.printStackTrace();
 		}
 	}
 	
@@ -116,7 +118,7 @@ public class Peer {
 			PrintWriter write = new PrintWriter(socket.getOutputStream());
 			
 			write.println("DELETE");
-			write.println(socket.getLocalAddress().getHostAddress());
+			write.println(Util.getIP());
 			write.println(this.localPort);
 			write.println(filepath);
 			write.flush();
@@ -127,6 +129,8 @@ public class Peer {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e){
 			e.printStackTrace();
 		}
 	}
