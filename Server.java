@@ -5,7 +5,7 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 
-/**
+/*
  * 
  * @author Yi Zhang
  * 
@@ -17,10 +17,10 @@ public class Server {
 
 	Integer port;
 	static String ListName = "fl.txt";
-	ArrayList<FileEntry> FE = new  ArrayList<FileEntry>();
+	ArrayList<FileEntry> FE = new  ArrayList<FileEntry>();	//list of files
 	File file = new File(ListName);
-	ServerSocket ss = null;
-	Socket cs = null;
+	ServerSocket ss = null;									//socket for server
+	Socket cs = null;										//socket for client
 	
 	public static void main(String[] args) 
 	{	
@@ -30,12 +30,12 @@ public class Server {
 		server.StartListenning();
 	}
 	
-	private void CreateList()
+	private void CreateList()								//Create a new local text file for file records
 	{
 		try
 		{
 			PrintWriter writer = new PrintWriter(ListName);
-			for (FileEntry ite : FE)
+			for (FileEntry ite : FE)						//Write all records in memory to text file
 			{
 				writer.println(ite.toString());
 			}
@@ -47,7 +47,7 @@ public class Server {
 		}
 	}
 	
-	private void ReadList()
+	private void ReadList()									//Read from the text file all the file records
 	{
 		try
 		{
@@ -68,7 +68,7 @@ public class Server {
 		}
 	}
 	
-	private void ReadPort()
+	private void ReadPort()									//Read in user specified port for server
 	{
 		try
 		{
@@ -99,7 +99,7 @@ public class Server {
 		}
 	}
 
-	private void ShowFileList()
+	private void ShowFileList()								//Print out all existing file records
 	{
 		System.out.println(FE.size() + " file(s) in list.");
 		for (int i = 0; i < FE.size(); i++)
@@ -109,7 +109,7 @@ public class Server {
 		System.out.println();
 	}
 	
-	private void StartListenning()
+	private void StartListenning()							//Starting listening to client requests
 	{
 		try
 		{
@@ -118,7 +118,7 @@ public class Server {
 			while (true)
 			{
 				cs = ss.accept();
-				ServerThread st = new ServerThread(cs);
+				ServerThread st = new ServerThread(cs);		//Once a request comes in, start a new thread
 				st.start();
 			}
 		}
@@ -129,13 +129,13 @@ public class Server {
 		
 	}
 	
-	class ServerThread extends Thread
+	class ServerThread extends Thread						//Thread to handle client request
 	{
 		Socket client;
 		BufferedReader input;
 		PrintWriter output;
 		
-		public ServerThread(Socket c)
+		public ServerThread(Socket c)						//Connect to client socket stream
 		{
 			this.client = c;
 			InputStreamReader reader;
@@ -154,7 +154,7 @@ public class Server {
 		}
 		
 		@Override
-		public void run()
+		public void run()									//Handle different request from client
 		{
 			String str = null;
 			System.out.println("New thread created.");
@@ -162,12 +162,12 @@ public class Server {
 			{
 				str = input.readLine();
 			
-				if (str.equals("LOOKUP"))
+				if (str.equals("LOOKUP"))					//Lookup files
 				{
 					boolean bl = false;
 					str = input.readLine();
 					System.out.println("Looking up \""+str+"\".");
-					for (FileEntry f : FE)
+					for (FileEntry f : FE)					//Return all matching records
 					{
 						if(f.getFileName().equals(str)){
 							bl = true;
@@ -180,7 +180,7 @@ public class Server {
 					else
 						System.out.println("File not found.\n");
 				}
-				else if (str.equals("REGISTER"))
+				else if (str.equals("REGISTER"))			//Register new file
 				{
 					FileWriter fw = new FileWriter(ListName, true);
 					PrintWriter writer = new PrintWriter(fw);
@@ -197,7 +197,7 @@ public class Server {
 					}
 					writer.close();
 				} 
-				else if (str.equals("DELETE"))
+				else if (str.equals("DELETE"))				//Delete file record
 				{
 					boolean bl = false;
 					FileEntry f = new FileEntry();
@@ -220,13 +220,13 @@ public class Server {
 				{
 					System.out.println("Invalid request.");
 				}
-				client.close();
+				client.close();								//Disconnect the client socket
 			}
 			catch (Exception e)
 			{
 				System.out.println(e.getMessage());
 			}
-			System.out.println("Thread ended.\n");
+			System.out.println("Thread ended.\n");			//Terminate the thread
 		}
 	}
 }
