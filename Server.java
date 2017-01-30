@@ -5,7 +5,14 @@ import java.net.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 
-
+/**
+ * 
+ * @author Yi Zhang
+ * 
+ * 1. This is a server class to response user request.
+ * 2. Server has its own thread called 'ServerThread'.
+ *
+ */
 public class Server {
 
 	Integer port;
@@ -16,8 +23,7 @@ public class Server {
 	Socket cs = null;
 	
 	public static void main(String[] args) 
-	{
-		// TODO Auto-generated method stub		
+	{	
 		Server server = new Server();
 		server.ReadPort();
 		server.ReadList();
@@ -128,8 +134,6 @@ public class Server {
 		Socket client;
 		BufferedReader input;
 		PrintWriter output;
-//		Integer FileNum;
-//		FileEntry[] FE = null;
 		
 		public ServerThread(Socket c)
 		{
@@ -163,12 +167,9 @@ public class Server {
 					boolean bl = false;
 					str = input.readLine();
 					System.out.println("Looking up \""+str+"\".");
-					for (int i = 0; i<FE.size(); i++)
+					for (FileEntry f : FE)
 					{
-						FileEntry f = FE.get(i);
-						File file = new File(f.getFileName());
-						if (file.getName().equals(str))
-						{
+						if(f.getFileName().equals(str)){
 							bl = true;
 							output.println(f.toString());
 						}
@@ -206,7 +207,8 @@ public class Server {
 					f.setPort(str);
 					str = input.readLine();
 					f.setFileName(str);
-					System.out.println("Deleting \"" + f.getFileName() + "\".");
+					str = input.readLine();
+					f.setDirectory(str);;
 					bl = FE.remove(f);
 					CreateList();
 					if (bl)

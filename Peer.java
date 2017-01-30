@@ -2,6 +2,7 @@ package CS550.iit;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Paths;
 import java.text.Format;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -71,7 +72,7 @@ public class Peer {
 			return;
 		}
 		if(file.isDirectory()){
-			fl = new FileListener(this, filepath, null);
+			fl = new FileListener(this, file.getAbsolutePath(), null);
 		} else {
 			fl = new FileListener(this, file.getParent(), file.getName());
 		}
@@ -87,13 +88,15 @@ public class Peer {
 			
 			write.println("REGISTER");
 			if(file.isDirectory()){
+				fe.setDirectory(file.getAbsolutePath());
 				File[] filelist = file.listFiles();
 				for(File f : filelist){
-					fe.setFileName(f.toString());
+					fe.setFileName(f.getName());
 					write.println(fe.toString());
 				}			
 			} else {
-				fe.setFileName(filepath);
+				fe.setDirectory(file.getParent());
+				fe.setFileName(file.getName());
 				write.println(fe.toString());
 			}
 			write.flush();
@@ -110,7 +113,7 @@ public class Peer {
 		}
 	}
 	
-	public void delete(String filepath) {
+	public void delete(String file, String dir) {
 		Socket socket;
 		
 		try {
@@ -120,7 +123,8 @@ public class Peer {
 			write.println("DELETE");
 			write.println(Util.getIP());
 			write.println(this.localPort);
-			write.println(filepath);
+			write.println(file);
+			write.println(dir);
 			write.flush();
 			
 			System.out.println("Update success!");
@@ -244,6 +248,9 @@ public class Peer {
 	private void closeFileShare(){
 		try {
 			this.ss.close();
+			for(FileListener fl : fList){
+				fl.close();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -289,7 +296,8 @@ public class Peer {
 								int index = Util.getInt(op);
 								if(index > 0 && index <= list.size()){
 									FileEntry fe = list.get(index - 1);
-									p.peerRetrieve(fe.getIP(), Util.getInt(fe.getPort()), fe.getFileName(), savepath);
+									String absolutepath = Paths.get(fe.getDirectory()).resolve(fe.getFileName()).toString();
+									p.peerRetrieve(fe.getIP(), Util.getInt(fe.getPort()), absolutepath, savepath);
 								}
 							}
 							break;
@@ -299,7 +307,7 @@ public class Peer {
 						String address = sc.nextLine();
 						System.out.println("Please input peer port:");
 						int port = Util.getInt(sc.nextLine());
-						System.out.println("Please input the file name: ");
+						System.out.println("Please input the file absolute path: ");
 						String file = sc.nextLine();
 						System.out.println("Please input the save path of the file: ");
 						String savepath = sc.nextLine();
@@ -331,7 +339,7 @@ public class Peer {
 		}
 		public void run(){
 			try {
-				this.filepath = input.readLine();
+				this.filepath = input.readLine().replace('\\', '/');
 				System.out.println("\nA new request for file:[" + this.filepath + 
 						"] from:" + socket.getRemoteSocketAddress());
 				
