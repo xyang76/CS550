@@ -1,7 +1,0 @@
-Tests we ran:
-
-2 peers registering its own file to the server.
-2 peers requesting each other's file via server.
-Looking up for file not registered by any peer.
-
-The detailed outputs can be found in the output screenshots.
