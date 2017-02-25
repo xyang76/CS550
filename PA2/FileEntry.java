@@ -1,5 +1,13 @@
 package CS550.iit;
 
+/**
+ * 
+ * @author Yi Zhang
+ * @version 1.0
+ * 
+ * 	This java class is a file object to transmit file information between peer and server.
+ * 
+ */
 public class FileEntry {
 
 	String IP, Port, FileName, Directory;

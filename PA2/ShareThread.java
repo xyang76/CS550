@@ -10,6 +10,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
+/**
+ * 
+ * @author Xincheng Yang
+ * @version 1.0
+ *
+ */
 public class ShareThread extends Thread{
 	Socket socket;
 	BufferedReader input; 
@@ -25,28 +31,39 @@ public class ShareThread extends Thread{
 	public void run(){
 		try {
 			this.filepath = input.readLine();
-			System.out.println("\nA new request for file:[" + this.filepath + 
-					"] from:" + socket.getRemoteSocketAddress());
+			System.out.print("\nA new request for file:[" + this.filepath + 
+					"] from:" + socket.getRemoteSocketAddress() + "\n$ ");
 			
-			File fi = new File(this.filepath);
-			DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(this.filepath)));
+			File f = new File(this.filepath);
+			if(!f.exists()){
+				output.writeInt(0);
+				output.flush();
+			} else if(f.isDirectory()) {
+				output.writeInt(1);
+				output.flush();
+			} else {
+				output.writeInt(2);
+				output.flush();
+				
+				DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(this.filepath)));
+				
+	            byte[] buf = new byte[4096];
+
+	            while (true) {
+	                int read = 0;
+	                if (dis != null) {
+	                    read = dis.read(buf);
+	                }
+
+	                if (read == -1) {
+	                    break;
+	                }
+	                output.write(buf, 0, read);
+	            }
+	            output.flush();
+	            dis.close();
+			}
 			
-            byte[] buf = new byte[4096];
-
-            while (true) {
-                int read = 0;
-                if (dis != null) {
-                    read = dis.read(buf);
-                }
-
-                if (read == -1) {
-                    break;
-                }
-                output.write(buf, 0, read);
-            }
-            output.flush();
-            
-            dis.close();
 			this.input.close();
 			this.output.close();
 			this.socket.close();
