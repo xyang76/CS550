@@ -12,10 +12,10 @@ import java.util.ArrayList;
  * Statically load a configuration file.
  * Default configuration file is "config.txt" in the same path of your executable Peer.jar directory.
  * If you do not have default config file, you can dynamically load config file with command:
- *  $ config [config file path]
+ *	$ config [config file path]
  * Our program only recognize 'neighbor' and 'file' properties in config file.
  * 
- * ---------------------- an example configuration file -------------------
+ * ---------------------- an example of configuration file -------------------
  * neighbor=192.168.1.2:8080
  * neighbor = 192.168.1.3:888
  * file = D:\sample.txt 

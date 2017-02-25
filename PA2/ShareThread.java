@@ -15,6 +15,11 @@ import java.net.Socket;
  * @author Xincheng Yang
  * @version 1.0
  *
+ * A thread to share file to other peers.
+ * Socket connection reply:
+ *	0 : file not exist.
+ *	1 : the file path is a directory.
+ *	2 : the file path is a file.
  */
 public class ShareThread extends Thread{
 	Socket socket;

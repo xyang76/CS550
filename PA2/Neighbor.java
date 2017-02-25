@@ -6,7 +6,9 @@ package CS550.iit;
  * @version 1.0
  * 
  * An neighbor object. 
- *
+ * Methods:
+ *	getNeighbor : get a neighbor instance from a neighbor string(because we need to check the format of neighbor string).
+ * 	
  */
 public class Neighbor {
 	private String ip;
@@ -27,7 +29,7 @@ public class Neighbor {
 	 * because we need to check the format of neighbor string.
 	 * 
 	 * @param neighborString
-	 * @return
+	 * @return a neighbor instance
 	 */
 	public static Neighbor getNeighbor(String neighborString){
 		try {

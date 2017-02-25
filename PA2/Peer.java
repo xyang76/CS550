@@ -12,19 +12,19 @@ import java.util.ArrayList;
  * Besides, peer will load default configuration file when it start.
  * 
  * Properties:
- * 	localport: a port to share file to other peers.
- *  ss : a server socket, when a new file request come in, it will create a new thread to handle the file request.
- *  runable : determine whether the file share system should be run.  
- *  neighborList : an array list for neighbors.
- *  fileList : an array list for local shared files.
+ *	localport: a port to share file to other peers.
+ *	ss : a server socket, when a new file request come in, it will create a new thread to handle the file request.
+ *	runable : determine whether the file share system should be run.  
+ *	neighborList : an array list for neighbors.
+ *	fileList : an array list for local shared files.
  *  
  * Methods:
- * 	main : main entry for whole system.
- *  start : start a new peer, it will initialize setting, load configuration, 
- *  		create a command thread and a file share thread.
- *  obtain : obtain a file from other peers. 
- *  getLocalIP : get local ip address.(Since java socket can not get correct ip address for local area network, 
- *  		we use an ip address website to get correct ip address.)
+ *	main : main entry for whole system.
+ *	start : start a new peer, it will initialize setting, load configuration, 
+ *			create a command thread and a file share thread.
+ *	obtain : obtain a file from other peers. 
+ *	getLocalIP : get local ip address.(Since java socket can not get correct ip address for local area network, 
+ *			we use an ip address website to get correct ip address.)
  */
 public class Peer {
 	//Local setting.

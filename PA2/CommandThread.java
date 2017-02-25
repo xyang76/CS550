@@ -11,15 +11,15 @@ import java.util.Scanner;
  *	
  * This is an independent thread to handle user input. 
  * Properties : 
- * 	Peer : a peer object.
- *  scanner : an input scanner.
+ *	Peer : a peer object.
+ *	scanner : an input scanner.
  * Methods:
- * 	config : load a config file [Config.java].
- *  register : dynamically add a file to share to other peers[Peer.java].
- *  query : query a file from other peers [Query.java].
- *  obtain : obtain a file from other peers [Peer.java].
- *  split : split a string command into several args.
- *  help : output a help information.
+ *	config : load a config file [Config.java].
+ *	register : dynamically add a file to share to other peers[Peer.java].
+ *	query : query a file from other peers [Query.java].
+ *	obtain : obtain a file from other peers [Peer.java].
+ *	split : split a string command into several args.
+ *	help : output a help information.
  */
 public class CommandThread extends Thread{
 	private Peer p;
