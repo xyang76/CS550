@@ -30,6 +30,7 @@ public class CommandThread extends Thread{
 			" $ config [filepath] -- Load a file.\n" +
 			" $ register [filepath] -- Register a file or a directory.\n" +
 			" $ query [filename] -- Query a file from other peers. \n" +
+			" $ list -- List all query results. \n" +
 			" $ obtain [resultnumber] [savepath] -- Obtain a file from peer. \n" +
 			" $ help -- get help and examples. \n" +
 			" $ exit -- exit and shutdown file share system.";
@@ -60,6 +61,8 @@ public class CommandThread extends Thread{
 					this.obtain(p.getQueryhitResult(), args.get(1), args.get(2));
 				} else if(s.equals("H")){
 					this.help();
+				} else if(s.equals("L")){
+					this.list();
 				} else if(s.equals("E")){
 					this.exit();
 					break;
@@ -139,6 +142,10 @@ public class CommandThread extends Thread{
 		System.out.println("example: $ query sample3.txt\n");
 		System.out.println("----------------------------------------------------------");
 		
+		System.out.println("{list} : list all query results");
+		System.out.println("example: $ list\n");
+		System.out.println("----------------------------------------------------------");
+		
 		System.out.println("{obtain} : obtain a file from other peers, make sure you already used query command first");
 		System.out.println("################## query result #################");
 		System.out.println("1. sample3.txt 192.168.1.2:7777");
@@ -159,6 +166,16 @@ public class CommandThread extends Thread{
 		p.close();
 	}
 	
+	public void list(){
+		ArrayList<FileEntry> results = p.getQueryhitResult();
+		
+		System.out.println("Find" + results.size() + " results");
+		for(int i=0; i<results.size(); i++){
+			FileEntry f = results.get(i);
+			System.out.println(String.format("%d. %s in %s:%d", i, f.getFileName(), f.getIP(), f.getPort()));
+		}
+	}
+	
 	public void obtain(String ip, int port, String filename, String savepath){
 		if(!p.obtain(ip, port, filename, savepath)){
 			System.err.println(String.format("Obtain %s from %s failed!", filename, ip));
@@ -170,8 +187,10 @@ public class CommandThread extends Thread{
 	public void obtain(ArrayList<FileEntry> queryResult, String index, String savepath) {
 		try {
 			int i = Integer.parseInt(index);
+			
 			if(i < 1 || i > queryResult.size()){
-				System.err.println("Incorrect index.");
+				System.err.println("Incorrect index or no result exist.");
+				return;
 			}
 			FileEntry fe = queryResult.get(i-1);
 			obtain(fe.getIP(), Integer.parseInt(fe.getPort()), fe.getFileName(), savepath);

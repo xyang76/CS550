@@ -42,6 +42,8 @@ public class ShareThread extends Thread{
 				doSendFile();
 			} else if("query".equals(req)){
 				doQuery();
+			} else if("queryhit".equals(req)){
+				doQueryHit();
 			}
 			this.input.close();
 			this.output.close();
@@ -52,8 +54,13 @@ public class ShareThread extends Thread{
 	}
 	
 	public void doQuery() {
-		
-		
+		Query q = new Query(peer);
+//		q.doQuery(messageID, filename, TTL);
+	}
+	
+	public void doQueryHit() {
+		Query q = new Query(peer);
+//		q.doQueryHit()
 	}
 
 	public void doSendFile(){

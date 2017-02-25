@@ -62,8 +62,8 @@ public class Config {
 		}
 	}
 	
-	public static boolean addNeighbor(ArrayList<Neighbor> neighborList, String neighbor){
-		Neighbor n = Neighbor.getNeighbor(neighbor);
+	public static boolean addNeighbor(ArrayList<Address> neighborList, String neighbor){
+		Address n = Address.getAddress(neighbor);
 		if(n == null) return false;
 		
 		neighborList.add(n);

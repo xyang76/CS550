@@ -1,6 +1,7 @@
 package CS550.iit;
 
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 /**
  * 
@@ -12,14 +13,17 @@ import java.util.ArrayList;
  */
 public class Query {
 	private Peer p;
+	private String filename;
+	private Hashtable<String, Address> messages;
 	
 	public Query(Peer peer){
 		this.p = peer;
 	}
 	
-	public void query(String filename){
+	public void startQuery(String filename){
 		// For every query, peer will have a new query result.
 		p.setQueryhitResult(new ArrayList<FileEntry>());
+		this.filename = filename;
 		
 		// Initialize TTL
 		int TTL = 10;
@@ -44,7 +48,11 @@ public class Query {
 		
 	}
 	
-	public void queryhit(){
+	public void endQueryHit(){
+		
+	}
+	
+	public void doQueryHit(){
 		
 	}
 }

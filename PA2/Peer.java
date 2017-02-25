@@ -31,7 +31,7 @@ public class Peer {
 	private int localPort;
 	private ServerSocket ss;
 	private boolean runable;				
-	private ArrayList<Neighbor> neighborList;
+	private ArrayList<Address> neighborList;
 	private ArrayList<File> fileList; 
 	private ArrayList<FileEntry> queryhitResult;
 
@@ -66,8 +66,9 @@ public class Peer {
 	
 	private void initSetting(){
 		this.runable = true;
-		this.neighborList = new ArrayList<Neighbor>();
+		this.neighborList = new ArrayList<Address>();
 		this.fileList = new ArrayList<File>();
+		this.queryhitResult = new ArrayList<FileEntry>();
 	}
 	
 	private void startGUI() {
@@ -165,11 +166,11 @@ public class Peer {
 		this.runable = runable;
 	}
 
-	public ArrayList<Neighbor> getNeighborList() {
+	public ArrayList<Address> getNeighborList() {
 		return neighborList;
 	}
 
-	public void setNeighborList(ArrayList<Neighbor> neighborList) {
+	public void setNeighborList(ArrayList<Address> neighborList) {
 		this.neighborList = neighborList;
 	}
 
