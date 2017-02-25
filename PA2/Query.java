@@ -1,5 +1,6 @@
 package CS550.iit;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -32,27 +33,40 @@ public class Query {
 		
 		
 		// Do query
-		this.doQuery("", filename, TTL);
+		this.doQuery("", filename, TTL, new Address(p.getLocalIP(), p.getLocalPort()));
 	}
 	
-	public void doQuery(String messageID, String filename, int TTL){
+	public void doQuery(String messageID, String filename, int TTL, Address source){
+		if(messages.containsKey(messageID)) return;
+		
+		messages.put(messageID, source);
 		this.searchLocalFiles();
 		this.broadcast();
 	}
 	
 	public void searchLocalFiles(){
+		ArrayList<File> fl = p.getFileList();
 		
+		// If hit a file, then go to doQueryHit.
 	}
 	
 	public void broadcast(){
-		
+		ArrayList<Address> neighbor = p.getNeighborList();
+	}
+
+	public void doQueryHit(){
+		// Open a socket connection to inform source peer.
 	}
 	
 	public void endQueryHit(){
-		
-	}
-	
-	public void doQueryHit(){
-		
+		ArrayList<FileEntry> results = p.getQueryhitResult();
+		// If file name are the same, and this is the original peer, then put data to peer - queryhitResult.
+		/*
+		if(!results.contains(fileEntry) && this.filename.equals(fileEntry.getFileName())){
+			results.add(fileEntry);
+		}
+		*/
+		// Then output a query hit information
+
 	}
 }
