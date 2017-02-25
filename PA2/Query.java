@@ -21,15 +21,30 @@ public class Query {
 		// For every query, peer will have a new query result.
 		p.setQueryhitResult(new ArrayList<FileEntry>());
 		
-		return;
+		// Initialize TTL
+		int TTL = 10;
+		
+		// Generate a messageID(IP, port, sequenceNumber)
+		
+		
+		// Do query
+		this.doQuery("", filename, TTL);
 	}
 	
-	// maybe you do not need it.
+	public void doQuery(String messageID, String filename, int TTL){
+		this.searchLocalFiles();
+		this.broadcast();
+	}
+	
+	public void searchLocalFiles(){
+		
+	}
+	
 	public void broadcast(){
 		
 	}
 	
 	public void queryhit(){
-		return;
+		
 	}
 }
