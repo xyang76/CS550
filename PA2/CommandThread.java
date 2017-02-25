@@ -41,9 +41,8 @@ public class CommandThread extends Thread{
 	}
 	
 	public void run(){
-		ArrayList<FileEntry> queryResult = null;
-		
 		this.setPeerPort();
+		
 		System.out.println(COMMAND_DETAIL_STRING);
 		while(true){
 			try {
@@ -58,7 +57,7 @@ public class CommandThread extends Thread{
 				} else if(s.equals("Q") && spilt(cmd, args, 2)){
 					this.query(args.get(1));
 				} else if(s.equals("O") && spilt(cmd, args, 3)){
-					this.obtain(queryResult, args.get(1), args.get(2));
+					this.obtain(p.getQueryhitResult(), args.get(1), args.get(2));
 				} else if(s.equals("H")){
 					this.help();
 				} else if(s.equals("E")){

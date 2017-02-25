@@ -12,28 +12,51 @@ import java.net.Socket;
 
 /**
  * 
- * @author Xincheng Yang
+ * @author Xincheng Yang, Yi Zhang
  * @version 1.0
  *
  * A thread to share file to other peers.
- * Socket connection reply:
- *	0 : file not exist.
- *	1 : the file path is a directory.
- *	2 : the file path is a file.
+ * 
+ * Methods:
+ * 	doQuery: query a file and propagate to other peers.
+ * 	doSendFile: send a file to another peer.
  */
 public class ShareThread extends Thread{
+	Peer peer;
 	Socket socket;
 	BufferedReader input; 
 	DataOutputStream output;
 	String filepath;
     
-	public ShareThread(Socket s) throws IOException{
+	public ShareThread(Peer p, Socket s) throws IOException{
+		this.peer = p;
 		this.socket = s;
 		input = new BufferedReader(new InputStreamReader(s.getInputStream(),"utf-8")); 
 		output = new DataOutputStream(s.getOutputStream());
 	}
 	
 	public void run(){
+		try {
+			String req = input.readLine();
+			if("obtain".equals(req)){
+				doSendFile();
+			} else if("query".equals(req)){
+				doQuery();
+			}
+			this.input.close();
+			this.output.close();
+			this.socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void doQuery() {
+		
+		
+	}
+
+	public void doSendFile(){
 		try {
 			this.filepath = input.readLine();
 			System.out.print("\nA new request for file:[" + this.filepath + 
@@ -52,26 +75,22 @@ public class ShareThread extends Thread{
 				
 				DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(this.filepath)));
 				
-	            byte[] buf = new byte[4096];
+				byte[] buf = new byte[4096];
 
-	            while (true) {
-	                int read = 0;
-	                if (dis != null) {
-	                    read = dis.read(buf);
-	                }
+				while (true) {
+					int read = 0;
+					if (dis != null) {
+						read = dis.read(buf);
+					}
 
-	                if (read == -1) {
-	                    break;
-	                }
-	                output.write(buf, 0, read);
-	            }
-	            output.flush();
-	            dis.close();
+					if (read == -1) {
+						break;
+					}
+					output.write(buf, 0, read);
+				}
+				output.flush();
+				dis.close();
 			}
-			
-			this.input.close();
-			this.output.close();
-			this.socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

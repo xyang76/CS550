@@ -33,6 +33,7 @@ public class Peer {
 	private boolean runable;				
 	private ArrayList<Neighbor> neighborList;
 	private ArrayList<File> fileList; 
+	private ArrayList<FileEntry> queryhitResult;
 
 	/**
 	 * Start a peer.
@@ -83,7 +84,7 @@ public class Peer {
 		while (this.runable) {
 			try {
 				s = ss.accept();
-				ShareThread st = new ShareThread(s);
+				ShareThread st = new ShareThread(this, s);
 				st.run();
 			} catch (SocketException e) {
 				if(this.runable){
@@ -111,6 +112,7 @@ public class Peer {
 			DataOutputStream file = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(savepath)));
 			PrintWriter write = new PrintWriter(socket.getOutputStream());
 			
+			write.println("obtain");
 			write.println(filename);
 			write.flush();
 			
@@ -177,6 +179,14 @@ public class Peer {
 
 	public void setFileList(ArrayList<File> fileList) {
 		this.fileList = fileList;
+	}
+
+	public ArrayList<FileEntry> getQueryhitResult() {
+		return queryhitResult;
+	}
+
+	public void setQueryhitResult(ArrayList<FileEntry> queryhitResult) {
+		this.queryhitResult = queryhitResult;
 	}
 	/****************************** Getter and Setter for local properties **********************************/
 }

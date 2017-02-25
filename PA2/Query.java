@@ -1,5 +1,7 @@
 package CS550.iit;
 
+import java.util.ArrayList;
+
 /**
  * 
  * @author Yi Zhang
@@ -16,7 +18,15 @@ public class Query {
 	}
 	
 	public void query(String filename){
+		// For every query, peer will have a new query result.
+		p.setQueryhitResult(new ArrayList<FileEntry>());
+		
 		return;
+	}
+	
+	// maybe you do not need it.
+	public void broadcast(){
+		
 	}
 	
 	public void queryhit(){
