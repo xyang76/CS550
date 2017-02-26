@@ -5,9 +5,9 @@ package CS550.iit;
  * @author Xincheng Yang
  * @version 1.0
  * 
- *          An address object. Methods: getAddress : get an address instance
- *          from a address string(because we need to check the format of
- *          address string).
+ * An address object. 
+ * Methods: 
+ *	getAddress : get an address instance from a address string(because we need to check the format of address string).
  * 
  */
 public class Address {
