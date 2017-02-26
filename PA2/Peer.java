@@ -3,7 +3,6 @@ package CS550.iit;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 /**
  * @author Xincheng Yang
@@ -30,13 +29,13 @@ import java.util.Hashtable;
 public class Peer {
 	//Local setting.
 	private int localPort;
+	private String localIP;
 	private ServerSocket ss;
 	private boolean runable;				
 	private ArrayList<Address> neighborList;
 	private ArrayList<File> fileList;
 	private ArrayList<Query> queryList;
-	private Hashtable<String, Address> messages = new Hashtable<String, Address>();
-	
+
 	/**
 	 * Start a peer.
 	 */
@@ -66,20 +65,21 @@ public class Peer {
 		this.startFileShare();
 	}
 	
-	private void initSetting(){
+	protected void initSetting(){
 		this.runable = true;
+		this.localIP = null;
 		this.neighborList = new ArrayList<Address>();
 		this.fileList = new ArrayList<File>();
 		this.queryList = new ArrayList<Query>();
 	}
 	
-	private void startGUI() {
+	protected void startGUI() {
 		//Use a new thread to handle peer command.
 		CommandThread cmd = new CommandThread(this);
 		cmd.start();
 	}
 	
-	private void startFileShare() throws IOException {
+	protected void startFileShare() throws IOException {
 		//Use a new thread to handle file share system.
 		Socket s = null;
 		this.ss = new ServerSocket(this.localPort);
@@ -100,7 +100,9 @@ public class Peer {
 	public void close() {
 		this.runable = false;
 		try {
-			this.ss.close();
+			if(this.ss != null){
+				this.ss.close();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -144,25 +146,22 @@ public class Peer {
 	}
 	
 	public String getLocalIP() {
-		String ip = null;
+		
+		if(this.localIP != null) return this.localIP;
+		
 		try {
 			URL url = new URL("http://checkip.amazonaws.com");
 	        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-	        ip = br.readLine();
+	        this.localIP = br.readLine();
 		} catch (Exception e) {
 			System.out.println("Can not get local IP address.");
 		}
         
-        return ip;
+        return this.localIP;
     }
 	
 	
 	/****************************** Getter and Setter for local properties **********************************/
-	
-	public Hashtable<String, Address> getMessages() {
-		return messages;
-	}
-	
 	public int getLocalPort() {
 		return localPort;
 	}

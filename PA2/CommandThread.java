@@ -22,13 +22,14 @@ import java.util.Scanner;
  *	help : output a help information.
  */
 public class CommandThread extends Thread{
-	private Peer p;
+	private Peer peer;
 	private Scanner sc;
 	
 	//Command string.
 	public static final String COMMAND_DETAIL_STRING = "\nCommand detail:\n" +
 			" $ config [filepath] -- Load a file.\n" +
 			" $ register [filepath] -- Register a file or a directory.\n" +
+			" $ addneighbor [ip]:[port] -- Dynamically add a neighbor.\n" +
 			" $ query [filename] -- Query a file from other peers. \n" +
 			" $ list -- List all query results. \n" +
 			" $ obtain [resultnumber] [savepath] -- Obtain a file from peer. \n" +
@@ -38,12 +39,11 @@ public class CommandThread extends Thread{
 	
 	public CommandThread(Peer p) {
 		this.sc = new Scanner(System.in);
-		this.p = p;
+		this.peer = p;
+		this.setPeerPort();
 	}
 	
 	public void run(){
-		this.setPeerPort();
-		
 		System.out.println(COMMAND_DETAIL_STRING);
 		while(true){
 			try {
@@ -55,6 +55,8 @@ public class CommandThread extends Thread{
 					this.config(args.get(1));
 				} else if(s.equals("R") && spilt(cmd, args, 2)){
 					this.register(args.get(1));
+				} else if(s.equals("A") && spilt(cmd, args, 2)){
+					this.addneighbor(args.get(1));
 				} else if(s.equals("Q") && spilt(cmd, args, 2)){
 					this.query(args.get(1));
 				} else if(s.equals("O")){
@@ -106,7 +108,7 @@ public class CommandThread extends Thread{
 			try {
 				port = Integer.parseInt(v);
 				if(port > 0 && port < 65535){
-					p.setLocalPort(port);
+					peer.setLocalPort(port);
 					break;
 				}
 				System.err.println("please input a legal port number(port number range: 0 - 65535):");
@@ -117,15 +119,23 @@ public class CommandThread extends Thread{
 	}
 	
 	public void config(String filepath){
-		if(!Config.load(p, filepath)){
+		if(!Config.load(peer, filepath)){
 			System.err.println("Load config failed, file not exist!");
 		} else {
 			System.out.println("Load config success!");
 		}
 	}
 	
+	public void addneighbor(String neighbor){
+		if(!Config.addNeighbor(peer.getNeighborList(), neighbor)){
+			System.err.println(String.format("Add neighbor %s failed, incorrect format.", neighbor));
+		} else {
+			System.out.println("Add neighbor success!");
+		}
+	}
+	
 	public void register(String filepath){
-		if(!Config.addFile(p.getFileList(), filepath)){
+		if(!Config.addFile(peer.getFileList(), filepath)){
 			System.err.println(String.format("Register file %s failed, file not exist.", filepath));
 		} else {
 			System.out.println("Register success!");
@@ -148,6 +158,10 @@ public class CommandThread extends Thread{
 		System.out.println("example: $ register D:\\sample2.txt\n");
 		System.out.println("----------------------------------------------------------");
 		
+		System.out.println("{addneighbor} : dynamically add a neighbor");
+		System.out.println("example: $ addneighbor 192.168.1.10:8888");
+		System.out.println("----------------------------------------------------------");
+		
 		System.out.println("{query} : query a file from other peers");
 		System.out.println("example: $ query sample3.txt\n");
 		System.out.println("----------------------------------------------------------");
@@ -159,8 +173,8 @@ public class CommandThread extends Thread{
 		
 		System.out.println("{obtain} : obtain a file from other peers, make sure you already used query command first");
 		System.out.println("################## query result #################");
-		System.out.println("1. sample3.txt 192.168.1.2:7777");
-		System.out.println("2. sample3.txt 192.168.1.3:8888");
+		System.out.println("[1] sample3.txt in 192.168.1.2:7777 E:\\test");
+		System.out.println("[2] sample3.txt in 192.168.1.3:8888 F:\\test1");
 		System.out.println("##################### end #######################");
 		System.out.println("example(obtain file from last query): $ obtain 1 D:\\savehere.txt\n");
 		System.out.println("example(obtain file from previous query): $ obtain sample3.txt 1 D:\\savehere.txt\n");
@@ -170,12 +184,13 @@ public class CommandThread extends Thread{
 		System.out.println("----------------------------------------------------------");
 	}
 	
-	public ArrayList<FileEntry> query(String filename){
-		return null;
+	public void query(String filename){
+		Query q = new Query(peer);
+		q.startQuery(filename);
 	}
 	
 	public void exit(){
-		p.close();
+		peer.close();
 	}
 	
 	private void list(ArrayList<FileEntry> results){
@@ -184,15 +199,14 @@ public class CommandThread extends Thread{
 			return;
 		}
 		
-		System.out.println("Find" + results.size() + " results");
 		for(int i=0; i<results.size(); i++){
 			FileEntry f = results.get(i);
-			System.out.println(String.format("%d. %s in %s:%d", i, f.getFileName(), f.getIP(), f.getPort()));
+			System.out.println(String.format("[%d] %s in %s %s", i, f.getFileName(), f.getIP(), f.getDirectory()));
 		}
 	}
 	
 	public void obtain(String ip, int port, String filename, String savepath){
-		if(!p.obtain(ip, port, filename, savepath)){
+		if(!peer.obtain(ip, port, filename, savepath)){
 			System.err.println(String.format("Obtain %s from %s failed!", filename, ip));
 		} else {
 			System.out.println(String.format("Obtain %s from %s success!", filename, ip));
@@ -208,21 +222,22 @@ public class CommandThread extends Thread{
 				return;
 			}
 			FileEntry fe = queryResult.get(i-1);
-			obtain(fe.getIP(), Integer.parseInt(fe.getPort()), fe.getFileName(), savepath);
+			String filepath = String.format("%s/%s", fe.getDirectory(), fe.getFileName()).replace('\\', '/');
+			obtain(fe.getIP(), Integer.parseInt(fe.getPort()), filepath, savepath);
 		} catch (NumberFormatException e) {
 			System.err.println("Incorrect index.");
 		}
 	}
 	
 	public ArrayList<FileEntry> getLastQueryResult(){
-		if(p.getQueryList().size() > 0){
-			return p.getQueryList().get(p.getQueryList().size()-1).getQueryhitResult();
+		if(peer.getQueryList().size() > 0){
+			return peer.getQueryList().get(peer.getQueryList().size()-1).getQueryhitResult();
 		}
 		return null;
 	}
 	
 	public ArrayList<FileEntry> getQueryResultByFile(String filename){
-		for(Query q : p.getQueryList()){
+		for(Query q : peer.getQueryList()){
 			if(filename.equals(q.getFilename())){
 				return q.getQueryhitResult();
 			}

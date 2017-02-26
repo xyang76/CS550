@@ -27,16 +27,11 @@ public class ShareThread extends Thread{
 	Socket socket;
 	BufferedReader input; 
 	DataOutputStream output;
-	String filepath;
-	int serial;
-	Address source;
 	ArrayList<String> messages = new ArrayList<String>();
 	
 	public ShareThread(Peer p, Socket s) throws IOException{
 		this.peer = p;
 		this.socket = s;
-		serial = 0;
-		source = new Address(peer.getLocalIP(),peer.getLocalPort());
 		input = new BufferedReader(new InputStreamReader(s.getInputStream(),"utf-8")); 
 		output = new DataOutputStream(s.getOutputStream());
 	}
@@ -56,13 +51,12 @@ public class ShareThread extends Thread{
 			this.socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
+		} 
 	}
 	
 	public void doQuery() throws IOException{
 		Query q = new Query(peer);
-		String line;
-		line = input.readLine();
+		String line = input.readLine();
 		String[] args = (line.split(" "));
 		
 //		Check the messageID first!
@@ -73,59 +67,57 @@ public class ShareThread extends Thread{
 	}
 	
 	public void doQueryHit() throws IOException{
-		Query q = new Query(peer);
 		String line;
 		line = input.readLine();
-		String[] args = (line.split(" "));
-//		format in args: filename, IP, Port
-//		q.endQueryHit();
+		FileEntry fe = new FileEntry(line);
+		
+		for(int i=peer.getQueryList().size()-1; i >= 0; i--){
+			if(peer.getQueryList().get(i).getFilename().equals(fe.getFileName())){
+				// Only print the last query file hit information
+				if(i == peer.getQueryList().size()-1){
+					peer.getQueryList().get(i).endQueryHit(fe, true);
+				} else {
+					peer.getQueryList().get(i).endQueryHit(fe, false);
+				}
+			}
+		}
 	}
 
-	public void doSendFile(){
-		try {
-			this.filepath = input.readLine();
-			System.out.print("\nA new request for file:[" + this.filepath + 
-					"] from:" + socket.getRemoteSocketAddress() + "\n$ ");
+	public void doSendFile() throws IOException{
+		
+		String filepath = input.readLine();
+		System.out.print("\nA new request for file:[" + filepath + 
+				"] from:" + socket.getRemoteSocketAddress() + "\n$ ");
+		
+		File f = new File(filepath);
+		if(!f.exists()){
+			output.writeInt(0);
+			output.flush();
+		} else if(f.isDirectory()) {
+			output.writeInt(1);
+			output.flush();
+		} else {
+			output.writeInt(2);
+			output.flush();
 			
-			File f = new File(this.filepath);
-			if(!f.exists()){
-				output.writeInt(0);
-				output.flush();
-			} else if(f.isDirectory()) {
-				output.writeInt(1);
-				output.flush();
-			} else {
-				output.writeInt(2);
-				output.flush();
-				
-				DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(this.filepath)));
-				
-				byte[] buf = new byte[4096];
+			DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(filepath)));
+			
+			byte[] buf = new byte[4096];
 
-				while (true) {
-					int read = 0;
-					if (dis != null) {
-						read = dis.read(buf);
-					}
-
-					if (read == -1) {
-						break;
-					}
-					output.write(buf, 0, read);
+			while (true) {
+				int read = 0;
+				if (dis != null) {
+					read = dis.read(buf);
 				}
-				output.flush();
-				dis.close();
+
+				if (read == -1) {
+					break;
+				}
+				output.write(buf, 0, read);
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
+			output.flush();
+			dis.close();
 		}
 	}
 	
-	
-// Create a new messageID in startQuery!
-
-	public String messageID(){
-		serial++;
-		return (peer.getLocalIP()+serial);
-	}
 }
