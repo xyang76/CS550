@@ -1,0 +1,2 @@
+file=E:\test\t1
+file=/Volumes/F/test/t1
