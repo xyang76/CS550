@@ -15,15 +15,18 @@ import java.util.Hashtable;
 public class Query {
 	private Peer p;
 	private String filename;
-	private Hashtable<String, Address> messages;
+	private ArrayList<FileEntry> queryhitResult;
+	
+	// For all queries, they should have a shared message hash table. So this property is static.
+	private static Hashtable<String, Address> messages = new Hashtable<String, Address>();
 	
 	public Query(Peer peer){
 		this.p = peer;
+		this.queryhitResult = new ArrayList<FileEntry>();
 	}
 	
 	public void startQuery(String filename){
 		// For every query, peer will have a new query result.
-		p.setQueryhitResult(new ArrayList<FileEntry>());
 		this.filename = filename;
 		
 		// Initialize TTL
@@ -48,6 +51,9 @@ public class Query {
 		ArrayList<File> fl = p.getFileList();
 		
 		// If hit a file, then go to doQueryHit.
+		for(File f : fl){
+			
+		}
 	}
 	
 	public void broadcast(){
@@ -59,7 +65,7 @@ public class Query {
 	}
 	
 	public void endQueryHit(){
-		ArrayList<FileEntry> results = p.getQueryhitResult();
+		
 		// If file name are the same, and this is the original peer, then put data to peer - queryhitResult.
 		/*
 		if(!results.contains(fileEntry) && this.filename.equals(fileEntry.getFileName())){
@@ -68,5 +74,22 @@ public class Query {
 		*/
 		// Then output a query hit information
 
+	}
+	
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+	
+
+	public ArrayList<FileEntry> getQueryhitResult() {
+		return queryhitResult;
+	}
+
+	public void setQueryhitResult(ArrayList<FileEntry> queryhitResult) {
+		this.queryhitResult = queryhitResult;
 	}
 }

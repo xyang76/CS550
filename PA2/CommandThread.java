@@ -24,6 +24,7 @@ import java.util.Scanner;
 public class CommandThread extends Thread{
 	private Peer p;
 	private Scanner sc;
+	private ArrayList<Query> queryList;
 	
 	//Command string.
 	public static final String COMMAND_DETAIL_STRING = "\nCommand detail:\n" +
@@ -39,6 +40,7 @@ public class CommandThread extends Thread{
 	public CommandThread(Peer p) {
 		this.sc = new Scanner(System.in);
 		this.p = p;
+		this.queryList = new ArrayList<Query>();
 	}
 	
 	public void run(){
@@ -57,12 +59,22 @@ public class CommandThread extends Thread{
 					this.register(args.get(1));
 				} else if(s.equals("Q") && spilt(cmd, args, 2)){
 					this.query(args.get(1));
-				} else if(s.equals("O") && spilt(cmd, args, 3)){
-					this.obtain(p.getQueryhitResult(), args.get(1), args.get(2));
+				} else if(s.equals("O")){
+					if(spilt(cmd, args, 3)){
+						this.obtain(getLastQueryResult(), args.get(1), args.get(2));
+					} else if(args.size() == 4){
+						this.obtain(getQueryResultByFile(args.get(1)), args.get(2), args.get(3));
+					} else {
+						System.out.print("Incorrect command or incorrect args.\n");
+					}
 				} else if(s.equals("H")){
 					this.help();
 				} else if(s.equals("L")){
-					this.list();
+					if(spilt(cmd, args, 2)){
+						this.list(getQueryResultByFile(args.get(1)));
+					} else {
+						this.list(getLastQueryResult());
+					}
 				} else if(s.equals("E")){
 					this.exit();
 					break;
@@ -142,8 +154,9 @@ public class CommandThread extends Thread{
 		System.out.println("example: $ query sample3.txt\n");
 		System.out.println("----------------------------------------------------------");
 		
-		System.out.println("{list} : list all query results");
-		System.out.println("example: $ list\n");
+		System.out.println("{list} : list all query results for last query or previous query");
+		System.out.println("example(list last query result): $ list\n");
+		System.out.println("example(list previous query result): $ list [filename]\n");
 		System.out.println("----------------------------------------------------------");
 		
 		System.out.println("{obtain} : obtain a file from other peers, make sure you already used query command first");
@@ -151,7 +164,8 @@ public class CommandThread extends Thread{
 		System.out.println("1. sample3.txt 192.168.1.2:7777");
 		System.out.println("2. sample3.txt 192.168.1.3:8888");
 		System.out.println("##################### end #######################");
-		System.out.println("$ obtain 1 D:\\savehere.txt\n");
+		System.out.println("example(obtain file from last query): $ obtain 1 D:\\savehere.txt\n");
+		System.out.println("example(obtain file from previous query): $ obtain sample3.txt 1 D:\\savehere.txt\n");
 		System.out.println("----------------------------------------------------------");
 		
 		System.out.println("{exit} : exit and close file share system.");
@@ -166,8 +180,11 @@ public class CommandThread extends Thread{
 		p.close();
 	}
 	
-	public void list(){
-		ArrayList<FileEntry> results = p.getQueryhitResult();
+	private void list(ArrayList<FileEntry> results){
+		if(results == null || results.size() == 0){
+			System.out.println("No result exist");
+			return;
+		}
 		
 		System.out.println("Find" + results.size() + " results");
 		for(int i=0; i<results.size(); i++){
@@ -188,7 +205,7 @@ public class CommandThread extends Thread{
 		try {
 			int i = Integer.parseInt(index);
 			
-			if(i < 1 || i > queryResult.size()){
+			if(i < 1 || queryResult == null || i > queryResult.size()){
 				System.err.println("Incorrect index or no result exist.");
 				return;
 			}
@@ -197,6 +214,22 @@ public class CommandThread extends Thread{
 		} catch (NumberFormatException e) {
 			System.err.println("Incorrect index.");
 		}
+	}
+	
+	public ArrayList<FileEntry> getLastQueryResult(){
+		if(this.queryList.size() > 0){
+			return queryList.get(queryList.size()-1).getQueryhitResult();
+		}
+		return null;
+	}
+	
+	public ArrayList<FileEntry> getQueryResultByFile(String filename){
+		for(Query q : this.queryList){
+			if(filename.equals(q.getFilename())){
+				return q.getQueryhitResult();
+			}
+		}
+		return null;
 	}
 
 }

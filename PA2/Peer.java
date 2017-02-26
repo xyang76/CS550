@@ -32,8 +32,7 @@ public class Peer {
 	private ServerSocket ss;
 	private boolean runable;				
 	private ArrayList<Address> neighborList;
-	private ArrayList<File> fileList; 
-	private ArrayList<FileEntry> queryhitResult;
+	private ArrayList<File> fileList;
 
 	/**
 	 * Start a peer.
@@ -68,7 +67,6 @@ public class Peer {
 		this.runable = true;
 		this.neighborList = new ArrayList<Address>();
 		this.fileList = new ArrayList<File>();
-		this.queryhitResult = new ArrayList<FileEntry>();
 	}
 	
 	private void startGUI() {
@@ -141,10 +139,16 @@ public class Peer {
 		} 
 	}
 	
-	public static String getLocalIP() throws Exception {
-        URL url = new URL("http://checkip.amazonaws.com");
-        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
-        String ip = br.readLine();
+	public String getLocalIP() {
+		String ip = null;
+		try {
+			URL url = new URL("http://checkip.amazonaws.com");
+	        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
+	        ip = br.readLine();
+		} catch (Exception e) {
+			System.out.println("Can not get local IP address.");
+		}
+        
         return ip;
     }
 	
@@ -182,12 +186,5 @@ public class Peer {
 		this.fileList = fileList;
 	}
 
-	public ArrayList<FileEntry> getQueryhitResult() {
-		return queryhitResult;
-	}
-
-	public void setQueryhitResult(ArrayList<FileEntry> queryhitResult) {
-		this.queryhitResult = queryhitResult;
-	}
 	/****************************** Getter and Setter for local properties **********************************/
 }
