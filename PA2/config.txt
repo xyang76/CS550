@@ -2,3 +2,4 @@ neighbor=127.0.0.1:8888
 neighbor=192.168.1.233:2333
 file=E:\test\t1
 file=/Volumes/F/test/t1
+file=/Volumes/F/test/t2/t2.txt
