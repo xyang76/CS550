@@ -60,4 +60,18 @@ public class Address {
 	public void setPort(int port) {
 		this.port = port;
 	}
+	
+	@Override
+	public boolean equals(Object target)
+	{
+		if(target == null || !target.getClass().getSimpleName().equals("Address")){
+			return false;
+		}
+		Address addr = (Address)target;
+		if(addr.getIP().equals(this.ip) && addr.getPort() == this.port){
+			return true;
+		} else {
+			return false;
+		}
+	}
 }
