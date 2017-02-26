@@ -24,7 +24,6 @@ import java.util.Scanner;
 public class CommandThread extends Thread{
 	private Peer p;
 	private Scanner sc;
-	private ArrayList<Query> queryList;
 	
 	//Command string.
 	public static final String COMMAND_DETAIL_STRING = "\nCommand detail:\n" +
@@ -40,7 +39,6 @@ public class CommandThread extends Thread{
 	public CommandThread(Peer p) {
 		this.sc = new Scanner(System.in);
 		this.p = p;
-		this.queryList = new ArrayList<Query>();
 	}
 	
 	public void run(){
@@ -217,14 +215,14 @@ public class CommandThread extends Thread{
 	}
 	
 	public ArrayList<FileEntry> getLastQueryResult(){
-		if(this.queryList.size() > 0){
-			return queryList.get(queryList.size()-1).getQueryhitResult();
+		if(p.getQueryList().size() > 0){
+			return p.getQueryList().get(p.getQueryList().size()-1).getQueryhitResult();
 		}
 		return null;
 	}
 	
 	public ArrayList<FileEntry> getQueryResultByFile(String filename){
-		for(Query q : this.queryList){
+		for(Query q : p.getQueryList()){
 			if(filename.equals(q.getFilename())){
 				return q.getQueryhitResult();
 			}

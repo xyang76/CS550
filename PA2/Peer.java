@@ -33,6 +33,7 @@ public class Peer {
 	private boolean runable;				
 	private ArrayList<Address> neighborList;
 	private ArrayList<File> fileList;
+	private ArrayList<Query> queryList;
 
 	/**
 	 * Start a peer.
@@ -67,6 +68,7 @@ public class Peer {
 		this.runable = true;
 		this.neighborList = new ArrayList<Address>();
 		this.fileList = new ArrayList<File>();
+		this.queryList = new ArrayList<Query>();
 	}
 	
 	private void startGUI() {
@@ -185,6 +187,13 @@ public class Peer {
 	public void setFileList(ArrayList<File> fileList) {
 		this.fileList = fileList;
 	}
+	
+	public ArrayList<Query> getQueryList() {
+		return queryList;
+	}
 
+	public void setQueryList(ArrayList<Query> queryList) {
+		this.queryList = queryList;
+	}
 	/****************************** Getter and Setter for local properties **********************************/
 }
