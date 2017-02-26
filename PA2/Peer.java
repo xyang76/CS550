@@ -3,6 +3,7 @@ package CS550.iit;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Hashtable;
 
 /**
  * @author Xincheng Yang
@@ -34,7 +35,8 @@ public class Peer {
 	private ArrayList<Address> neighborList;
 	private ArrayList<File> fileList;
 	private ArrayList<Query> queryList;
-
+	private Hashtable<String, Address> messages = new Hashtable<String, Address>();
+	
 	/**
 	 * Start a peer.
 	 */
@@ -156,6 +158,11 @@ public class Peer {
 	
 	
 	/****************************** Getter and Setter for local properties **********************************/
+	
+	public Hashtable<String, Address> getMessages() {
+		return messages;
+	}
+	
 	public int getLocalPort() {
 		return localPort;
 	}

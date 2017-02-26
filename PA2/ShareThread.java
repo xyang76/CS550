@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * 
@@ -27,10 +28,15 @@ public class ShareThread extends Thread{
 	BufferedReader input; 
 	DataOutputStream output;
 	String filepath;
-    
+	int serial;
+	Address source;
+	ArrayList<String> messages = new ArrayList<String>();
+	
 	public ShareThread(Peer p, Socket s) throws IOException{
 		this.peer = p;
 		this.socket = s;
+		serial = 0;
+		source = new Address(peer.getLocalIP(),peer.getLocalPort());
 		input = new BufferedReader(new InputStreamReader(s.getInputStream(),"utf-8")); 
 		output = new DataOutputStream(s.getOutputStream());
 	}
@@ -53,14 +59,26 @@ public class ShareThread extends Thread{
 		}
 	}
 	
-	public void doQuery() {
+	public void doQuery() throws IOException{
 		Query q = new Query(peer);
-//		q.doQuery(messageID, filename, TTL);
+		String line;
+		line = input.readLine();
+		String[] args = (line.split(" "));
+		
+//		Check the messageID first!
+		if (!messages.contains(args[0])) {
+			messages.add(args[0]);
+			q.doQuery(args[0], args[1], Integer.valueOf(args[2]), new Address(args[3],Integer.valueOf(args[4])));
+		}
 	}
 	
-	public void doQueryHit() {
+	public void doQueryHit() throws IOException{
 		Query q = new Query(peer);
-//		q.doQueryHit()
+		String line;
+		line = input.readLine();
+		String[] args = (line.split(" "));
+//		format in args: filename, IP, Port
+//		q.endQueryHit();
 	}
 
 	public void doSendFile(){
@@ -101,5 +119,13 @@ public class ShareThread extends Thread{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	
+// Create a new messageID in startQuery!
+
+	public String messageID(){
+		serial++;
+		return (peer.getLocalIP()+serial);
 	}
 }
