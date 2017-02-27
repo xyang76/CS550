@@ -7,36 +7,51 @@ import java.net.Socket;
 
 /**
  * 
- * @author Yi Zhang
+ * @author Yi Zhang, Xincheng Yang
  * @version 1.0
  * 
  * 	This java class is a file object to transmit file information between peer and server.
  * 
  */
 public class Query {
-	private Peer p;
+	private Peer peer;
 	private String filename;
 	private ArrayList<FileEntry> queryhitResult;
 	private QueryHitEvent queryHitEvent;	// a fake event to listen time elapse from query start to query hit.
 	
 	public Query(Peer peer){
-		this.p = peer;
+		this.peer = peer;
 		this.queryhitResult = new ArrayList<FileEntry>();
 		peer.getQueryList().add(this);
 	}
 	
-	public void startQuery(String filename){
+	public void startQuery(final String filename){
 		// For every query, peer will have a new query result.
 		this.filename = filename;
-		
-		// Initialize TTL
-		int TTL = 10;
-		
-		// Generate a messageId
-		String messageId = String.format("%d-%s-%d", (new Date()).getTime(), p.getLocalIP(), p.getLocalPort());
+	
+		// Do query with a new thread
+		new Thread(){
+			public void run(){
+				// Initialize TTL
+				int TTL = 10;
 				
-		// Do query
-		this.doQuery(messageId, filename, TTL, new Address(p.getLocalIP(), p.getLocalPort()));
+				// Generate a messageId
+				String messageId = String.format("%d-%s-%d", (new Date()).getTime(), peer.getLocalIP(), peer.getLocalPort());
+				
+				// Do query
+				doQuery(messageId, filename, TTL, new Address(peer.getLocalIP(), peer.getLocalPort()));
+				
+				// Sleep 30000ms
+				try {
+					Thread.currentThread().sleep(30000);
+					if(queryhitResult.size() == 0){
+						System.out.print(String.format("Query for file %s time out, no result found.\n$ ", filename));
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
 	}
 	
 	public void doQuery(String messageId, String filename, int TTL, Address source){
@@ -47,7 +62,7 @@ public class Query {
 	}
 	
 	public void searchLocalFiles(String messageId, String filename){
-		ArrayList<File> fl = p.getFileList();
+		ArrayList<File> fl = peer.getFileList();
 		
 		// If hit a file, then go to doQueryHit.
 		for(File f : fl){
@@ -58,14 +73,14 @@ public class Query {
 	}
 	
 	public void broadcast(String messageId, String filename, int TTL, Address source){
-		ArrayList<Address> neighbor = p.getNeighborList();
+		ArrayList<Address> neighbor = peer.getNeighborList();
 		for (Address n : neighbor){
 			if (!n.equals(source)){
 				try{
 					Socket s = new Socket(n.getIP(), n.getPort());
 					PrintWriter write = new PrintWriter(s.getOutputStream());
 					write.println("query");
-					write.println(messageId+" "+filename+" "+TTL+" "+p.getLocalIP()+" "+p.getLocalPort());
+					write.println(messageId+" "+filename+" "+TTL+" "+peer.getLocalIP()+" "+peer.getLocalPort());
 					write.flush();
 					
 					write.close();
@@ -73,7 +88,7 @@ public class Query {
 				}
 				catch(Exception e)
 				{
-					System.out.println("Connection error!");
+					System.out.println(String.format("Connection error, can not connect to %s:%d!", n.getIP(), n.getPort()));
 				}
 			}
 		}
@@ -81,15 +96,15 @@ public class Query {
 
 	public void doQueryHit(File f, String messageId){
 		// Open a socket connection to inform source peer.
+		String[] message = messageId.split("-");
 		try{
-			String[] message = messageId.split("-");
 			Socket s = new Socket(message[1], Integer.parseInt(message[2]));
 			
 			PrintWriter write = new PrintWriter(s.getOutputStream());
 			write.println("queryhit");
 			FileEntry fe = new FileEntry();
-			fe.setIP(p.getLocalIP());
-			fe.setPort(String.valueOf(p.getLocalPort()));
+			fe.setIP(peer.getLocalIP());
+			fe.setPort(String.valueOf(peer.getLocalPort()));
 			fe.setFileName(f.getName());
 			fe.setDirectory(f.getParent());
 			write.println(fe.toString());
@@ -99,7 +114,7 @@ public class Query {
 			s.close();
 		}
 		catch(Exception e){
-			System.out.println("Connection error!");
+			System.out.println(String.format("Connection error, can not connect to %s:%s!", message[1], message[2]));
 		}
 	}
 	
@@ -115,8 +130,8 @@ public class Query {
 			}
 			
 			if(print){
-				System.out.print(String.format("[%d] Queryhit %s in %s %s\n$ ", queryhitResult.size(),
-						fe.getFileName(), fe.getIP(), fe.getDirectory()));
+				System.out.print(String.format("[%d] Queryhit %s in %s:%s %s\n$ ", queryhitResult.size(),
+						fe.getFileName(), fe.getIP(), fe.getPort(), fe.getDirectory()));
 			}
 		}
 	}
