@@ -46,15 +46,12 @@ public class Peer {
 		} catch (BindException e) {
 			System.err.println("Port address already in use. please restart the system and select another port.");
 			p.close();
-		}  catch (SocketException e) {
-			System.err.println("Port address already in use. please restart the system and select another port.");
-			p.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void start() throws Exception{
+	public void start() throws IOException{
 		//Initialize local setting.
 		this.initSetting();
 		
@@ -82,7 +79,7 @@ public class Peer {
 		cmd.start();
 	}
 	
-	protected void startFileShare() throws Exception {
+	protected void startFileShare() throws IOException {
 		//Use a new thread to handle file share system.
 		Socket s = null;
 		this.ss = new ServerSocket(this.localPort);

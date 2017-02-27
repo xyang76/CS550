@@ -23,10 +23,10 @@ public class PerformTest {
 			Scanner sc = new Scanner(System.in);
 			String file = sc.nextLine();
 			System.out.println("Please input a local port number:");
-			final int port = Integer.parseInt(sc.nextLine());
+			int port = Integer.parseInt(sc.nextLine());
 			
 			//Start a peer without command line
-			final Peer p = new Peer();
+			Peer p = new Peer();
 			p.initSetting();
 			Config.load(p, null);
 			
@@ -36,7 +36,7 @@ public class PerformTest {
 					p.setLocalPort(port);
 					try {
 						p.startFileShare();
-					} catch (Exception e) {
+					} catch (IOException e) {
 						e.printStackTrace();
 					} 
 				}
