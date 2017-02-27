@@ -111,9 +111,14 @@ public class Peer {
 		}
 	}
 	
-	public boolean obtain(String ip, int port, String filename, String savepath){
+	public boolean obtain(String ip, int port, String filename, String path, String savepath){
 		Socket socket;
 		try {
+			File f = new File(savepath);
+			if(f.exists() && f.isDirectory()){
+				savepath = savepath + "/" + filename;
+			}
+			String filepath = String.format("%s/%s", path, filename).replace('\\', '/');
 			socket = new Socket(ip, port);
 			byte[] buf = new byte[4096];
 			DataInputStream input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
@@ -121,7 +126,7 @@ public class Peer {
 			PrintWriter write = new PrintWriter(socket.getOutputStream());
 			
 			write.println("obtain");
-			write.println(filename);
+			write.println(filepath);
 			write.flush();
 			
 			int flag = input.readInt();

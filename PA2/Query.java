@@ -21,14 +21,18 @@ public class Query {
 	
 	public Query(Peer peer){
 		this.peer = peer;
-		this.queryhitResult = new ArrayList<FileEntry>();
-		peer.getQueryList().add(this);
 	}
 	
 	public void startQuery(final String filename){
 		// For every query, peer will have a new query result.
 		this.filename = filename;
-	
+		
+		// Initialize query hit result
+		this.queryhitResult = new ArrayList<FileEntry>();
+		
+		// Add it to queryList.
+		peer.getQueryList().add(this);
+		
 		// Do query with a new thread
 		new Thread(){
 			public void run(){
