@@ -72,7 +72,9 @@ public class ShareThread extends Thread{
 		FileEntry fe = new FileEntry(line);
 		
 		for(int i=peer.getQueryList().size()-1; i >= 0; i--){
-			if(peer.getQueryList().get(i).getFilename().equals(fe.getFileName())){
+			String filename = peer.getQueryList().get(i).getFilename();
+		
+			if(fe.getFileName().equals(filename)){
 				// Only print the last query file hit information
 				if(i == peer.getQueryList().size()-1){
 					peer.getQueryList().get(i).endQueryHit(fe, true);
