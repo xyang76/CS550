@@ -204,13 +204,13 @@ public class CommandThread extends Thread{
 		
 		for(int i=0; i<results.size(); i++){
 			FileEntry f = results.get(i);
-			System.out.println(String.format("[%d] %s in %s:%s %s", i+1, f.getFileName(), 
+			System.out.println(String.format("[%d] %s in %s:%s %s", i, f.getFileName(), 
 					f.getIP(), f.getPort(), f.getDirectory()));
 		}
 	}
 	
-	public void obtain(String ip, int port, String filename, String path, String savepath){
-		if(!peer.obtain(ip, port, filename, path, savepath)){
+	public void obtain(String ip, int port, String filename, String savepath){
+		if(!peer.obtain(ip, port, filename, savepath)){
 			System.err.println(String.format("Obtain %s from %s failed!", filename, ip));
 		} else {
 			System.out.println(String.format("Obtain %s from %s success!", filename, ip));
@@ -226,8 +226,8 @@ public class CommandThread extends Thread{
 				return;
 			}
 			FileEntry fe = queryResult.get(i-1);
-			
-			obtain(fe.getIP(), Integer.parseInt(fe.getPort()), fe.getFileName(), fe.getDirectory(), savepath);
+			String filepath = String.format("%s/%s", fe.getDirectory(), fe.getFileName()).replace('\\', '/');
+			obtain(fe.getIP(), Integer.parseInt(fe.getPort()), filepath, savepath);
 		} catch (NumberFormatException e) {
 			System.err.println("Incorrect index.");
 		}
