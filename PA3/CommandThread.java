@@ -1,5 +1,6 @@
 package CS550.iit;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -7,7 +8,7 @@ import java.util.Scanner;
 /**
  * 
  * @author Xincheng Yang
- * @version 1.0
+ * @version 2.0
  *	
  * This is an independent thread to handle user input. 
  * Properties : 
@@ -20,6 +21,11 @@ import java.util.Scanner;
  *	obtain : obtain a file from other peers [Peer.java].
  *	split : split a string command into several args.
  *	help : output a help information.
+ *
+ * Updates for PA3:
+ * 1. Modified function "obtain", when we obtain a file, we register it to peer.fileList as a remote file.
+ * 2. Modified function "obtain", Can not obtain an outdate file.
+ * 3. Modified function "list", the format is changed for PA3.
  */
 public class CommandThread extends Thread{
 	private Peer peer;
@@ -138,7 +144,7 @@ public class CommandThread extends Thread{
 	}
 	
 	public void register(String filepath){
-		if(!Config.addFile(peer.getFileList(), filepath, new Address(peer.getLocalIP(), peer.getLocalPort()))){
+		if(!Config.addLocalFile(peer, filepath)){
 			System.err.println(String.format("Register file %s failed, file not exist.", filepath));
 		} else {
 			System.out.println("Register success!");
@@ -204,16 +210,18 @@ public class CommandThread extends Thread{
 		
 		for(int i=0; i<results.size(); i++){
 			FileEntry f = results.get(i);
-			System.out.println(String.format("[%d] %s in %s:%s %s", i+1, f.getFileName(), 
-					f.getSourceIP(), f.getSourcePort(), f.getDirectory()));
+			System.out.println(String.format("[%d] %s in %s:%s %s(%s)", i+1, f.getFileName(), 
+					f.getSourceIP(), f.getSourcePort(), f.getDirectory(), f.isOutDate()));
 		}
 	}
 	
-	public void obtain(String ip, int port, String filename, String path, String savepath){
+	public boolean fileObtain(String ip, int port, String filename, String path, String savepath){
 		if(!peer.obtain(ip, port, filename, path, savepath)){
 			System.err.println(String.format("Obtain %s from %s failed!", filename, ip));
+			return false;
 		} else {
 			System.out.println(String.format("Obtain %s from %s success!", filename, ip));
+			return true;
 		}
 	}
 	
@@ -226,8 +234,17 @@ public class CommandThread extends Thread{
 				return;
 			}
 			FileEntry fe = queryResult.get(i-1);
+
+			File f = new File(savepath);
+			if(f.exists() && f.isDirectory()){
+				savepath = savepath + "/" + fe.getFileName();
+			}
 			
-			obtain(fe.getSourceIP(), Integer.parseInt(fe.getSourcePort()), fe.getFileName(), fe.getDirectory(), savepath);
+			// Add for PA3
+			boolean rv = fileObtain(fe.getSourceIP(), Integer.parseInt(fe.getSourcePort()), fe.getFileName(), fe.getDirectory(), savepath);
+			if(rv){
+				Config.addRemoteFile(peer, fe, savepath);
+			}
 		} catch (NumberFormatException e) {
 			System.err.println("Incorrect index.");
 		}

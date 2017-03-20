@@ -3,8 +3,8 @@ package CS550.iit;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Vector;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 /**
  * 
@@ -13,6 +13,9 @@ import java.net.UnknownHostException;
  * 
  * 	This java class is a file object to transmit file information between peer and server.
  * 
+ * Updates for PA3:
+ * 1. searchLocalFiles: For push approach, if a file is out date, do not response the queryhit.
+ * 2. searchLocalFiles: For poll approach, if a file is out date, poll the original server.
  */
 public class Query {
 	private Peer peer;
@@ -67,13 +70,30 @@ public class Query {
 	}
 	
 	public void searchLocalFiles(String messageId, String filename){
-		ArrayList<FileEntry> fl = peer.getFileList();
-		
+		Vector<FileEntry> fl = peer.getFileList();
+		ArrayList<FileEntry> rmList = new ArrayList<FileEntry>(); 
 		// If hit a file, then go to doQueryHit.
+		// Update for PA3: do not response when file is outdate
 		for(FileEntry f : fl){
 			if (f.getFileName().equals(filename)){
-				this.doQueryHit(f, messageId);
+				if(f.isOutDate() && Consistency.isPushApproach == false){
+					// If poll approach, we will check the out date information.
+					Boolean v = Consistency.poll(f);
+					if(v){
+						System.out.println(String.format("The file %s from %s:%s is out date.", 
+								f.getFileName(), f.getOriginIP(), f.getOriginPort()));
+						rmList.add(f);
+					} else {
+						this.doQueryHit(f, messageId);
+					}
+				} else if(!f.isOutDate()){
+					// For push approach, we only response the newest version.
+					this.doQueryHit(f, messageId);
+				}
 			}
+		}
+		for(FileEntry f: rmList){
+			fl.remove(f);
 		}
 	}
 	

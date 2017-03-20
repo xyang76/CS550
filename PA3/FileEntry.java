@@ -5,10 +5,13 @@ import java.io.File;
 /**
  * 
  * @author Yi Zhang
- * @version 1.0
+ * @version 2.0
  * 
  * 	This java class is a file object to transmit file information between peer and server.
  * 
+ * Updates for PA3:
+ * 1. add properties: originIP, originPort, version and outDate.
+ * 2. modified the constructor and method "toString" to match the requirements of PA3.
  */
 public class FileEntry {
 	// A file contain it's original ip address, port, filename and directory.
@@ -17,6 +20,7 @@ public class FileEntry {
 	private boolean outDate;
 
 	public FileEntry(String msg){
+		this.init();
 		String[] s = msg.split(" ");
 		originIP = s[0];
 		originPort = s[1];
@@ -26,10 +30,10 @@ public class FileEntry {
 		directory = s[5];
 		version = Integer.valueOf(s[6]);
 		outDate = Boolean.valueOf(s[7]);
-		this.init();
 	}
 	
 	public FileEntry(File f, Address addr){
+		this.init();
 		File file = new File(f.getAbsolutePath());
 		directory = file.getParent();
 		fileName = file.getName();
@@ -37,7 +41,6 @@ public class FileEntry {
 		originPort = String.valueOf(addr.getPort());
 		sourceIP = originIP;
 		sourcePort = originPort;
-		this.init();
 	}
 
 	public FileEntry() {

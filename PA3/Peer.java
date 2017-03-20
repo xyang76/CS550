@@ -3,6 +3,7 @@ package CS550.iit;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * @author Xincheng Yang
@@ -25,6 +26,10 @@ import java.util.ArrayList;
  *	obtain : obtain a file from other peers. 
  *	getLocalIP : get local ip address.(Since java socket can not get correct ip address for local area network, 
  *			we use an ip address website to get correct ip address.)
+ *
+ * Updates for PA3:
+ * 1. add a new property FileListener listener. 
+ * 2. modified function "obtain" to update the shared file information. 
  */
 public class Peer {
 	//Local setting.
@@ -33,8 +38,9 @@ public class Peer {
 	private ServerSocket ss;
 	private boolean runable;				
 	private ArrayList<Address> neighborList;
-	private ArrayList<FileEntry> fileList;
+	private Vector<FileEntry> fileList;
 	private ArrayList<Query> queryList;
+	private FileListener listener;
 
 	/**
 	 * Start a peer.
@@ -58,12 +64,12 @@ public class Peer {
 		//Initialize local setting.
 		this.initSetting();
 		
+		//Start a command GUI with a new thread.
+		this.startGUI();
+		
 		//Load config.
 		Config.load(this, null);
 		
-		//Start a command GUI with a new thread.
-		this.startGUI();
-				
 		//Start to listen socket request(each request has its own thread to handle them)
 		this.startFileShare();
 	}
@@ -72,8 +78,9 @@ public class Peer {
 		this.runable = true;
 		this.localIP = null;
 		this.neighborList = new ArrayList<Address>();
-		this.fileList = new ArrayList<FileEntry>();
+		this.fileList = new Vector<FileEntry>();
 		this.queryList = new ArrayList<Query>();
+		this.listener = new FileListener(this);
 	}
 	
 	protected void startGUI() {
@@ -102,6 +109,7 @@ public class Peer {
 	
 	public void close() {
 		this.runable = false;
+		this.listener.close();
 		try {
 			if(this.ss != null){
 				this.ss.close();
@@ -114,10 +122,6 @@ public class Peer {
 	public boolean obtain(String ip, int port, String filename, String path, String savepath){
 		Socket socket;
 		try {
-			File f = new File(savepath);
-			if(f.exists() && f.isDirectory()){
-				savepath = savepath + "/" + filename;
-			}
 			String filepath = String.format("%s/%s", path, filename).replace('\\', '/');
 			socket = new Socket(ip, port);
 			byte[] buf = new byte[4096];
@@ -194,11 +198,11 @@ public class Peer {
 		this.neighborList = neighborList;
 	}
 
-	public ArrayList<FileEntry> getFileList() {
+	public Vector<FileEntry> getFileList() {
 		return fileList;
 	}
 
-	public void setFileList(ArrayList<FileEntry> fileList) {
+	public void setFileList(Vector<FileEntry> fileList) {
 		this.fileList = fileList;
 	}
 	
@@ -208,6 +212,14 @@ public class Peer {
 
 	public void setQueryList(ArrayList<Query> queryList) {
 		this.queryList = queryList;
+	}
+	
+	public FileListener getListener() {
+		return listener;
+	}
+
+	public void setListener(FileListener listener) {
+		this.listener = listener;
 	}
 	
 	/****************************** Getter and Setter for local properties **********************************/

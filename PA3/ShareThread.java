@@ -60,16 +60,17 @@ public class ShareThread extends Thread{
 	
 	private void doPoll() throws IOException {
 		// If the approach is push, then return;
-//		if(Consistency.approach == true) return;
+		if(Consistency.isPushApproach == true) return;
 		
 		// Read the file from input.
 		FileEntry fe = new FileEntry(input.readLine());
 		output.writeBoolean(Consistency.doPoll(peer.getFileList(), fe));
+		output.flush();
 	}
 
 	private void doInvalidate() throws IOException {
 		// If the approach is pull, then return;
-//		if(Consistency.approach == false) return;
+		if(Consistency.isPushApproach == false) return;
 		
 		// Read the file from input. True means out-dated.
 		FileEntry fe = new FileEntry(input.readLine());
