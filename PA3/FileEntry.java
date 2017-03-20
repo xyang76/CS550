@@ -13,15 +13,19 @@ import java.io.File;
 public class FileEntry {
 	// A file contain it's original ip address, port, filename and directory.
 	String originIP, originPort, sourceIP, sourcePort, fileName, directory;
-	private int Version;
+	private int version;
 	private boolean outDate;
 
 	public FileEntry(String msg){
 		String[] s = msg.split(" ");
-		sourceIP = s[0];
-		sourcePort = s[1];
-		fileName = s[2];
-		directory = s[3];
+		originIP = s[0];
+		originPort = s[1];
+		sourceIP = s[2];
+		sourcePort = s[3];
+		fileName = s[4];
+		directory = s[5];
+		version = Integer.valueOf(s[6]);
+		outDate = Boolean.valueOf(s[7]);
 		this.init();
 	}
 	
@@ -41,12 +45,14 @@ public class FileEntry {
 	}
 	
 	private void init(){
-		Version = 1;
+		version = 1;
 		outDate = false;
 	}
 
 	public String toString() {
-		return (sourceIP + " " + sourcePort + " " + fileName + " " + directory);
+		return String.format("%s %s %s %s %s %s %d %s", 
+				originIP, originPort, sourceIP, sourcePort, 
+				fileName, directory, version, outDate);		
 	}
 
 	public String getDirectory() {
@@ -54,7 +60,7 @@ public class FileEntry {
 	}
 
 	public void setDirectory(String directory) {
-		directory = directory;
+		this.directory = directory;
 	}
 
 	public String getFileName() {
@@ -98,11 +104,11 @@ public class FileEntry {
 	}
 	
 	public int getVersion() {
-		return Version;
+		return version;
 	}
 
 	public void setVersion(int version) {
-		Version = version;
+		this.version = version;
 	}
 
 	public boolean isOutDate() {

@@ -71,10 +71,10 @@ public class ShareThread extends Thread{
 		// If the approach is pull, then return;
 //		if(Consistency.approach == false) return;
 		
-		// Read the file from input.
+		// Read the file from input. True means out-dated.
 		FileEntry fe = new FileEntry(input.readLine());
 		String[] source = input.readLine().split(" ");
-		Consistency.doInvalidate(peer.getNeighborList(), fe, new Address(source[0], Integer.valueOf(source[1])));
+		Consistency.doInvalidate(peer, fe, new Address(source[0], Integer.valueOf(source[1])), Integer.valueOf(source[2]));
 	}
 
 	public void doQuery() throws IOException{
