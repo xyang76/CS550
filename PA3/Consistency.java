@@ -33,7 +33,7 @@ public class Consistency {
 			writer.close();
 			s.close();
 		} catch (Exception e) {
-			System.out.println(String.format("Connection error, can not connect to %s:%d!", fe.getOriginIP(), fe.getOriginPort()));
+			System.out.print(String.format("Connection error, can not connect to %s:%d!\n%s ", fe.getOriginIP(), fe.getOriginPort()));
 		}
 		return outdate;
 	}
@@ -45,10 +45,12 @@ public class Consistency {
 	 * @return
 	 */
 	public static boolean doPoll(Vector<FileEntry> vector, FileEntry fe) {
+		System.out.print(String.format("Received an poll request for file %s.\n%$ ", fe.getFileName()));
 		for (FileEntry ite : vector) {
 			if (ite.fileName.equals(fe.fileName)) {
-				if (ite.getVersion() > fe.getVersion())
+				if (ite.getVersion() > fe.getVersion()){
 					return true;
+				}
 				else return false;
 			}
 		}
@@ -84,10 +86,12 @@ public class Consistency {
 		//Checking for local file entry
 		boolean outDate = false;
 		boolean found = false;
+		
 		for (FileEntry ite : peer.getFileList()) {
 			if (ite.fileName.equals(ite.fileName) && ite.originIP.equals(fe.originIP) && ite.originPort.equals(fe.originPort)){
 				found = true;
 				if (ite.getVersion() < fe.getVersion()) {
+					System.out.print(String.format("Received an invalidate message and set the file %s outdate.\n%$ ", fe.getFileName()));
 					ite.setOutDate(true);
 					break;
 				}
@@ -111,7 +115,7 @@ public class Consistency {
 						writer.close();
 						s.close();
 					} catch (Exception e) {
-						System.out.println(String.format("Connection error, can not connect to %s:%d!", ite.getIP(), ite.getPort()));
+						System.out.print(String.format("Connection error, can not connect to %s:%d!\n%s ", ite.getIP(), ite.getPort()));
 					}
 				}
 			}
@@ -128,6 +132,8 @@ public class Consistency {
 	 */
 	public static void updateVersion(Peer peer, String dir, String changed, boolean del) {
 		ArrayList<FileEntry> rm = new ArrayList<FileEntry>();
+		
+		System.out.print(String.format("Detected file %s changed and the version is updated automatically.\n%$ ", changed));
 		
 		//Find file from fileEntry
 		for(FileEntry fe : peer.getFileList()){
