@@ -210,7 +210,8 @@ public class CommandThread extends Thread{
 		
 		for(int i=0; i<results.size(); i++){
 			FileEntry f = results.get(i);
-			System.out.println(String.format("[%d] %s in %s:%s %s(%s)", i+1, f.getFileName(), 
+			System.out.println(String.format("[%d] %s(version:%d, outdate:%s) in %s:%s %s", i+1, f.getFileName(), 
+					f.getVersion(), f.isOutDate(),
 					f.getSourceIP(), f.getSourcePort(), f.getDirectory(), f.isOutDate()));
 		}
 	}
