@@ -45,7 +45,7 @@ public class Consistency {
 	 * @return
 	 */
 	public static boolean doPoll(Vector<FileEntry> vector, FileEntry fe) {
-		System.out.print(String.format("Received an poll request for file %s.\n%$ ", fe.getFileName()));
+		System.out.print(String.format("Received an poll request for file %s.\n$ ", fe.getFileName()));
 		for (FileEntry ite : vector) {
 			if (ite.fileName.equals(fe.fileName)) {
 				if (ite.getVersion() > fe.getVersion()){
@@ -91,7 +91,9 @@ public class Consistency {
 			if (ite.fileName.equals(ite.fileName) && ite.originIP.equals(fe.originIP) && ite.originPort.equals(fe.originPort)){
 				found = true;
 				if (ite.getVersion() < fe.getVersion()) {
-					System.out.print(String.format("Received an invalidate message and set the file %s outdate.\n%$ ", fe.getFileName()));
+					if(!ite.isOutDate()){
+						System.out.print(String.format("Received an invalidate message and set the file %s outdate.\n$ ", fe.getFileName()));
+					}
 					ite.setOutDate(true);
 					break;
 				}
@@ -115,7 +117,7 @@ public class Consistency {
 						writer.close();
 						s.close();
 					} catch (Exception e) {
-						System.out.print(String.format("Connection error, can not connect to %s:%d!\n%s ", ite.getIP(), ite.getPort()));
+						System.out.print(String.format("Connection error, can not connect to %s:%d!\n$ ", ite.getIP(), ite.getPort()));
 					}
 				}
 			}
@@ -133,7 +135,7 @@ public class Consistency {
 	public static void updateVersion(Peer peer, String dir, String changed, boolean del) {
 		ArrayList<FileEntry> rm = new ArrayList<FileEntry>();
 		
-		System.out.print(String.format("Detected file %s changed and the version is updated automatically.\n%$ ", changed));
+		System.out.print(String.format("Detected file %s changed and the version is updated automatically.\n$ ", changed));
 		
 		//Find file from fileEntry
 		for(FileEntry fe : peer.getFileList()){

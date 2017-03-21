@@ -29,7 +29,8 @@ import java.util.Vector;
  *
  * Updates for PA3:
  * 1. add a new property FileListener listener. 
- * 2. modified function "obtain" to update the shared file information. 
+ * 2. modified function "obtain" to update the shared file information.
+ * 3. change local file list from ArrayList to Vector(because vector is thread safety). 
  */
 public class Peer {
 	//Local setting.

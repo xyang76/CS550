@@ -116,7 +116,16 @@ public class Config {
 				fileList.add(new FileEntry(f, addr));
 			}
 		} else {
-			fileList.add(new FileEntry(file, addr));
+			boolean overlap = false;
+			for(FileEntry local: peer.getFileList()){
+				if(local.getFileName().equals(file.getName()) && 
+						local.getDirectory().equals(file.getParent())){
+					overlap = true;
+				}
+			}
+			if(!overlap){
+				fileList.add(new FileEntry(file, addr));
+			}
 		}
 		
 		//Reg fileListener
@@ -128,14 +137,29 @@ public class Config {
 	public static boolean addRemoteFile(Peer peer, FileEntry rmfile, String savePath){
 		File file = new File(savePath);
 		if(!file.exists()) return false;
+		Vector<FileEntry> list = peer.getFileList();
 		
 		File f = new File(file.getAbsolutePath());
-		rmfile.setDirectory(f.getParent());
-		rmfile.setFileName(f.getName());
-		rmfile.setSourceIP(peer.getLocalIP());
-		rmfile.setSourcePort(String.valueOf(peer.getLocalPort()));
+		boolean overlap = false;
 		
-		peer.getFileList().add(rmfile);
+		for(FileEntry local: list){
+			if(local.getFileName().equals(rmfile.getFileName()) && 
+					local.getDirectory().equals(f.getParent())){
+				local.setOriginIP(rmfile.getOriginIP());
+				local.setOriginPort(rmfile.getOriginPort());
+				local.setVersion(rmfile.getVersion());
+				overlap = true;
+			}
+		}
+		
+		if(!overlap){
+			rmfile.setDirectory(f.getParent());
+			rmfile.setFileName(f.getName());
+			rmfile.setSourceIP(peer.getLocalIP());
+			rmfile.setSourcePort(String.valueOf(peer.getLocalPort()));
+			
+			peer.getFileList().add(rmfile);
+		}
 		
 		//Reg fileListener
 		//peer.getListener().regFileListener(f);
